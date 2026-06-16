@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- USER & PROFILE ---
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  passwordHash         String
+  webauthnCredentialID String?
+  webauthnPublicKey    Bytes?
+  webauthnCounter      Int             @default(0)
+  currentChallenge     String?
+  profile              UserProfile?
+  expenses      Expense[]
+  foodEntries   FoodEntry[]
+  exercises     ExerciseEntry[]
+  subscriptions Subscription[]
+  dailyLogs     DailyLog[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model UserProfile {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id])
+  age                Int
+  gender             String   
+  heightCm           Float
+  weightKg           Float
+  activityLevel      String   
+  weightGoal         String   
+  monthlyBudgetLimit Float
+  isDarkMode         Boolean   @default(false)
+  currentStreak      Int       @default(0)
+  longestStreak      Int       @default(0)
+  lastActiveDate     DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// --- BUDGET MODULE ---
+
+model ExpenseCategory {
+  id       String    @id @default(uuid())
+  name     String    
+  userId   String?   
+  expenses Expense[]
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  categoryId  String
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  amount      Float
+  description String?
+  date        DateTime        
+  createdAt   DateTime        @default(now())
+}
+
+model Subscription {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  name            String
+  amount          Float
+  billingCycle    String   // "MONTHLY", "YEARLY"
+  nextBillingDate DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+// --- CALORIE MODULE ---
+
+model FoodItem {
+  id              String      @id @default(uuid())
+  name            String
+  caloriesPer100g Float
+  proteinPer100g  Float
+  carbsPer100g    Float
+  fatPer100g      Float
+  isCustom        Boolean     @default(false)
+  createdByUserId String?     
+  entries         FoodEntry[]
+}
+
+model FoodEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  foodItemId  String
+  foodItem    FoodItem @relation(fields: [foodItemId], references: [id])
+  amountGrams Float
+  mealType    String   
+  date        DateTime 
+  createdAt   DateTime @default(now())
+}
+
+// --- EXERCISE MODULE ---
+
+model Exercise {
+  id                   String          @id @default(uuid())
+  name                 String
+  caloriesBurnedPerMin Float
+  entries              ExerciseEntry[]
+}
+
+model ExerciseEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  durationMin Int
+  date        DateTime 
+  createdAt   DateTime @default(now())
+}
+
+// --- TRACKER MODULE ---
+
+model DailyLog {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  date             DateTime  
+  waterGlasses     Int       @default(0)
+  fastingStartTime DateTime?
+  fastingEndTime   DateTime?
+  
+  @@unique([userId, date])
+}
