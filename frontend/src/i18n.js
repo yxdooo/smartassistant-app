@@ -84,7 +84,15 @@ const resources = {
         lunch: "Lunch",
         dinner: "Dinner",
         snack: "Snack",
-        logFood: "Log Food"
+        logFood: "Log Food",
+        safeDailySpend: "Daily Runway",
+        daysLeft: "days left in month",
+        budgetPacing: "Budget Pacing",
+        protein: "Protein",
+        carbs: "Carbs",
+        fat: "Fat",
+        macrosTitle: "Macronutrient Distribution",
+        quickWater: "+1 Glass"
       },
       analytics: {
         title: "Analytics & Achievements",
@@ -197,7 +205,15 @@ const resources = {
         lunch: "Öğle Yemeği",
         dinner: "Akşam Yemeği",
         snack: "Atıştırmalık",
-        logFood: "Yemek Ekle"
+        logFood: "Yemek Ekle",
+        safeDailySpend: "Günlük Güvenli Harcama",
+        daysLeft: "ay sonuna kalan gün",
+        budgetPacing: "Bütçe Hızı",
+        protein: "Protein",
+        carbs: "Karbonhidrat",
+        fat: "Yağ",
+        macrosTitle: "Makro Besin Dağılımı",
+        quickWater: "+1 Bardak"
       },
       analytics: {
         title: "Analizler ve Başarılar",

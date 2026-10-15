@@ -26,7 +26,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
-              <SmartBot />
             </ProtectedRoute>
           } 
         />

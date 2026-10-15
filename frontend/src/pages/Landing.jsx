@@ -77,7 +77,7 @@ const Landing = () => {
         <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex-1 text-center lg:text-left">
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50/80 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-black tracking-widest uppercase mb-8 shadow-sm backdrop-blur-md border border-indigo-100 dark:border-indigo-800/50">
             <Zap size={14} className="animate-pulse" />
-            Super App v2.0
+            Personal Life OS • v2.0
           </motion.div>
           
           <motion.h1 variants={fadeUp} className="text-6xl md:text-8xl font-black tracking-tight mb-8 leading-[1.1]">
@@ -213,7 +213,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="relative z-10 bg-white dark:bg-gray-900 py-12 text-center text-gray-400 border-t border-gray-200 dark:border-gray-800">
         <p className="font-bold flex items-center justify-center gap-2 text-sm">
-          <Shield size={16} /> Built for the Portfolio. Ready for production.
+          <Shield size={16} /> Engineered with Privacy-First Architecture. MIT Licensed.
         </p>
       </footer>
     </div>

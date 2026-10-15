@@ -9,12 +9,13 @@ import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { exportToCSV, exportToPDF } from '../utils/export';
-import { Download, FileText, Camera, Droplets, Clock, Loader2, Play, Square, PlusCircle, Settings, Wallet, Coffee, Activity, Search, Flame } from 'lucide-react';
+import { Download, FileText, Camera, Droplets, Clock, Loader2, Play, Square, PlusCircle, Settings, Wallet, Coffee, Activity, Search, Flame, TrendingUp, Gauge, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { soundFX } from '../utils/soundFX';
 import { requestNotificationPermission, sendPushNotification } from '../utils/notifications';
 import Tilt from 'react-parallax-tilt';
 import Budget3DChart from '../components/Budget3DChart';
+import SmartBot from '../components/SmartBot';
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -306,6 +307,24 @@ const Dashboard = () => {
     }
   ] : [];
 
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const currentDay = now.getDate();
+  const daysRemaining = Math.max(1, daysInMonth - currentDay + 1);
+  const remainingBudget = (budgetForecast?.monthlyBudgetLimit || 0) - (budgetForecast?.totalSpentSoFar || 0);
+  const safeDailySpend = Math.max(0, remainingBudget / daysRemaining);
+  const monthPercentElapsed = Math.round((currentDay / daysInMonth) * 100);
+  const budgetPercentSpent = budgetForecast?.monthlyBudgetLimit 
+    ? Math.round((budgetForecast.totalSpentSoFar / budgetForecast.monthlyBudgetLimit) * 100) 
+    : 0;
+
+  const proteinConsumed = calorieSummary?.consumed?.protein || 0;
+  const carbsConsumed = calorieSummary?.consumed?.carbs || 0;
+  const fatConsumed = calorieSummary?.consumed?.fat || 0;
+  const targetProtein = 140;
+  const targetCarbs = 250;
+  const targetFat = 65;
+
   const cardClass = "bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-gray-200/40 dark:shadow-black/20 border border-white/60 dark:border-gray-700/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300";
 
   if (loading) return (
@@ -390,6 +409,52 @@ const Dashboard = () => {
                 </div>
             </div>
             )}
+        </motion.div>
+
+        {/* Real-time Telemetry & Runway Strip */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-5 rounded-2xl border border-white/60 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+              <TrendingUp size={22} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">{t('dashboard.safeDailySpend')}</p>
+              <p className="text-xl font-black text-gray-900 dark:text-white">
+                ${safeDailySpend.toFixed(2)} <span className="text-xs font-normal text-gray-400">/ day</span>
+              </p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{daysRemaining} {t('dashboard.daysLeft')}</p>
+            </div>
+          </div>
+
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-5 rounded-2xl border border-white/60 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+              <Gauge size={22} />
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">{t('dashboard.budgetPacing')}</p>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{budgetPercentSpent}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${budgetPercentSpent > monthPercentElapsed ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+                  style={{ width: `${Math.min(budgetPercentSpent, 100)}%` }} 
+                />
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1 font-medium">{monthPercentElapsed}% of month elapsed</p>
+            </div>
+          </div>
+
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-5 rounded-2xl border border-white/60 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">SmartAssistant Telemetry</p>
+              <p className="text-sm font-black text-gray-900 dark:text-white">Active Life OS Sync</p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Real-time biometrics & finance</p>
+            </div>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
@@ -502,6 +567,42 @@ const Dashboard = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Macro Nutrients Progress Bars */}
+              <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/50 space-y-3">
+                <p className="text-xs font-black uppercase tracking-wider text-gray-400">{t('dashboard.macrosTitle')}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-50/80 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div className="flex justify-between text-xs font-bold mb-1">
+                      <span className="text-indigo-600 dark:text-indigo-400">{t('dashboard.protein')}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{proteinConsumed}g</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((proteinConsumed / targetProtein) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50/80 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div className="flex justify-between text-xs font-bold mb-1">
+                      <span className="text-amber-600 dark:text-amber-400">{t('dashboard.carbs')}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{carbsConsumed}g</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((carbsConsumed / targetCarbs) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50/80 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div className="flex justify-between text-xs font-bold mb-1">
+                      <span className="text-rose-600 dark:text-rose-400">{t('dashboard.fat')}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{fatConsumed}g</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((fatConsumed / targetFat) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
             </Tilt>
 
@@ -516,7 +617,16 @@ const Dashboard = () => {
                            <Droplets size={18} className="text-blue-500" />
                            <span className="text-sm font-black text-gray-900 dark:text-gray-100">{t('dashboard.hydration')}</span>
                         </div>
-                        <span className="text-[10px] uppercase font-black tracking-widest text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 rounded-full">{dailyLog?.waterGlasses || 0}/8 {t('dashboard.glasses')}</span>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            type="button" 
+                            onClick={() => handleWaterClick(Math.min(dailyLog?.waterGlasses || 0, 7))} 
+                            className="text-[11px] font-bold bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1 rounded-full shadow-2xs transition-all active:scale-95"
+                          >
+                            {t('dashboard.quickWater')}
+                          </button>
+                          <span className="text-[10px] uppercase font-black tracking-widest text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 rounded-full">{dailyLog?.waterGlasses || 0}/8 {t('dashboard.glasses')}</span>
+                        </div>
                      </div>
                      <div className="flex flex-wrap gap-2.5">
                         {[...Array(8)].map((_, i) => (
@@ -628,6 +738,7 @@ const Dashboard = () => {
       </motion.div>
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onUpdated={fetchData} />
+      <SmartBot onOpenSettings={() => setIsSettingsOpen(true)} />
 
     </div>
   );

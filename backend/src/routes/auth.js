@@ -218,7 +218,13 @@ router.post('/webauthn/verify-authentication', async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const profile = await prisma.userProfile.findUnique({ where: { userId: req.user.userId } });
-    res.json(profile);
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    res.json({
+      ...profile,
+      hasAiApiKey: !!profile.aiApiKey,
+      aiProvider: profile.aiProvider || 'gemini',
+      aiApiKey: profile.aiApiKey || ''
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
@@ -226,7 +232,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 
 // Update Profile
 router.put('/profile', authenticateToken, async (req, res) => {
-  const { isDarkMode, age, gender, heightCm, weightKg, activityLevel, weightGoal, monthlyBudgetLimit } = req.body;
+  const { isDarkMode, age, gender, heightCm, weightKg, activityLevel, weightGoal, monthlyBudgetLimit, aiApiKey, aiProvider } = req.body;
   try {
     const profile = await prisma.userProfile.update({
       where: { userId: req.user.userId },
@@ -239,9 +245,16 @@ router.put('/profile', authenticateToken, async (req, res) => {
         ...(activityLevel !== undefined && { activityLevel }),
         ...(weightGoal !== undefined && { weightGoal }),
         ...(monthlyBudgetLimit !== undefined && { monthlyBudgetLimit: parseFloat(monthlyBudgetLimit) }),
+        ...(aiApiKey !== undefined && { aiApiKey: aiApiKey ? aiApiKey.trim() : null }),
+        ...(aiProvider !== undefined && { aiProvider: aiProvider || 'gemini' }),
       }
     });
-    res.json(profile);
+    res.json({
+      ...profile,
+      hasAiApiKey: !!profile.aiApiKey,
+      aiProvider: profile.aiProvider || 'gemini',
+      aiApiKey: profile.aiApiKey || ''
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update profile' });
   }
