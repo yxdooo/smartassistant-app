@@ -1,14 +1,21 @@
-// SmartAssistant Anna App: onboarding, quick logs and a weekly money and
-// nutrition review. Data lives in Anna Storage inside Anna and in
-// localStorage when the bundle is opened outside the host.
+// SmartAssistant Anna App: onboarding, quick logs, intermittent fasting,
+// activity telemetry and weekly money & nutrition reviews. Data lives in
+// Anna Storage inside Anna and in localStorage when opened outside the host.
 
 import { TOOLS, todayIso } from "./engine.js";
 
 const STORE_KEY = "smartassistant:v1";
 const HANDLE = "smartassistant";
-const KEEP_DAYS = 120; // storage values are capped at 256 KB, so old rows are pruned
+const KEEP_DAYS = 120;
 const CATEGORIES = ["Food", "Eating out", "Transport", "Bills", "Health", "Fun", "Other"];
 const CURRENCIES = ["USD", "EUR", "GBP", "TRY", "CAD", "AUD", "INR"];
+
+const MEAL_PRESETS = [
+  { label: "☕ Coffee / Tea", kcal: 40, protein: 1 },
+  { label: "🥗 Light Lunch", kcal: 450, protein: 25 },
+  { label: "🍗 Protein Meal", kcal: 650, protein: 45 },
+  { label: "🍎 Healthy Snack", kcal: 180, protein: 4 },
+];
 
 // ---------- tiny DOM helper ----------
 function h(tag, props = {}, ...kids) {
@@ -80,8 +87,10 @@ function normalize(raw) {
     meals: Array.isArray(s.meals) ? s.meals : [],
     water: Array.isArray(s.water) ? s.water : [],
     reviews: Array.isArray(s.reviews) ? s.reviews : [],
+    fasting: s.fasting && typeof s.fasting === "object" ? s.fasting : null,
   };
 }
+
 function prune(s) {
   const d = new Date();
   d.setDate(d.getDate() - KEEP_DAYS);
@@ -111,7 +120,6 @@ async function callTool(method, args) {
 // ---------- state + helpers ----------
 let state = normalize(null);
 let view = "today";
-let busy = false;
 let reviewState = { status: "idle" };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -122,6 +130,34 @@ const fmtMoney = (n) => {
   catch { return n.toFixed(2); }
 };
 const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+
+function calculateStreak() {
+  const daysWithLogs = new Set();
+  for (const r of state.expenses) daysWithLogs.add(r.date);
+  for (const r of state.meals) daysWithLogs.add(r.date);
+  for (const r of state.water) daysWithLogs.add(r.date);
+
+  const today = todayIso();
+  let streak = 0;
+  let curr = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const getIso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  if (!daysWithLogs.has(getIso(curr))) {
+    curr.setDate(curr.getDate() - 1);
+  }
+
+  while (true) {
+    const dStr = getIso(curr);
+    if (daysWithLogs.has(dStr)) {
+      streak++;
+      curr.setDate(curr.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
 
 async function commit(msg, undo) {
   try {
@@ -138,6 +174,16 @@ function addRow(kind, row, label) {
   state[kind].push(item);
   commit(label, () => {
     state[kind] = state[kind].filter((r) => r.id !== item.id);
+    commit();
+  });
+}
+
+function removeRow(kind, id, label) {
+  const target = state[kind].find((r) => r.id === id);
+  if (!target) return;
+  state[kind] = state[kind].filter((r) => r.id !== id);
+  commit(label || "Entry removed.", () => {
+    state[kind].push(target);
     commit();
   });
 }
@@ -167,6 +213,8 @@ function onboardingView() {
           state.profile = {
             currency: f.currency, monthly_budget: +f.budget, fixed_costs: +(f.fixed || 0),
             calories: data.calories, protein_g: data.protein_g, water_ml: data.water_ml,
+            fat_g: data.fat_g || Math.round(data.calories * 0.25 / 9),
+            carbs_g: data.carbs_g || Math.max(0, Math.round((data.calories - data.protein_g * 4 - (data.calories * 0.25)) / 4)),
             inputs: { weight_kg: +f.weight, height_cm: +f.height, age: +f.age, sex: f.sex, activity: f.activity, goal: f.goal },
           };
           state.plan = data;
@@ -200,6 +248,55 @@ function onboardingView() {
     h("p", { class: "muted" }, "You will get a safe daily spend and daily calorie, protein and water targets."), h("div", { class: "card" }, form));
 }
 
+function fastingWidget() {
+  const f = state.fasting;
+  if (!f || !f.started_at) {
+    return h("div", { class: "card" },
+      h("div", { class: "fasting-header" },
+        h("div", {},
+          h("h2", {}, "⏱️ Intermittent Fasting (16:8)"),
+          h("p", { class: "muted" }, "Ready to fast? Most people start after dinner and break fast around noon.")),
+        h("button", {
+          class: "primary",
+          onclick: () => {
+            state.fasting = { started_at: new Date().toISOString(), target_hours: 16 };
+            commit("Fasting timer started!");
+          }
+        }, "Start 16h Fast")));
+  }
+
+  const startTime = new Date(f.started_at).getTime();
+  const now = Date.now();
+  const elapsedMs = Math.max(0, now - startTime);
+  const elapsedHours = elapsedMs / (1000 * 60 * 60);
+  const targetHours = f.target_hours || 16;
+  const progressPct = Math.min(100, Math.round((elapsedHours / targetHours) * 100));
+  const hours = Math.floor(elapsedHours);
+  const minutes = Math.floor((elapsedHours - hours) * 60);
+  const isComplete = elapsedHours >= targetHours;
+
+  return h("div", { class: "card" },
+    h("div", { class: "fasting-header" },
+      h("div", {},
+        h("div", { class: "row", style: "gap: 8px;" },
+          h("h2", {}, isComplete ? "🎉 Fast Target Reached!" : "⏳ Fasting in Progress"),
+          h("span", { class: "badge " + (isComplete ? "badge-success" : "badge-active") }, isComplete ? "Goal Met" : "Active")),
+        h("p", { class: "muted" }, `Started ${new Date(f.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Target: ${targetHours} hours`)),
+      h("button", {
+        onclick: () => {
+          if (confirm("End fasting session?")) {
+            state.fasting = null;
+            commit("Fast ended.");
+          }
+        }
+      }, isComplete ? "Break Fast" : "Stop Fast")),
+    h("div", { class: "fasting-timer" },
+      h("span", { class: "timer-digits" }, `${hours}h ${minutes}m`),
+      h("span", { class: "timer-target" }, `/ ${targetHours}h`)),
+    h("div", { class: "bar" + (isComplete ? " goal-met" : "") },
+      h("i", { style: `width: ${progressPct}%` })));
+}
+
 function todayView() {
   const day = todayIso();
   const p = state.profile;
@@ -215,41 +312,100 @@ function todayView() {
   } catch { /* shown as unavailable */ }
   const leftToday = safe ? safe.safe_daily_spend - spentToday : null;
 
+  // Water calculations
+  const targetWater = p.water_ml || 2000;
+  const waterPillsCount = 8;
+  const filledPills = Math.min(waterPillsCount, Math.round((waterToday / targetWater) * waterPillsCount));
+
+  // Today's logs
+  const todayExpenses = state.expenses.filter((r) => r.date === day);
+  const todayMeals = state.meals.filter((r) => r.date === day);
+  const todayWater = state.water.filter((r) => r.date === day);
+
   const amount = h("input", { id: "amt", type: "number", min: 0, step: "any", inputmode: "decimal", "aria-label": "Expense amount", placeholder: "Amount" });
   const addExpense = (cat) => {
     const v = parseFloat(amount.value);
     if (!(v > 0)) { toast("Enter an amount first."); amount.focus(); return; }
     addRow("expenses", { amount: v, category: cat }, `Added ${fmtMoney(v)} to ${cat}`);
+    amount.value = "";
   };
+
   const kcal = h("input", { type: "number", min: 0, inputmode: "numeric", "aria-label": "Calories", placeholder: "kcal" });
   const prot = h("input", { type: "number", min: 0, inputmode: "numeric", "aria-label": "Protein grams", placeholder: "protein g" });
   const lastMeal = state.meals[state.meals.length - 1];
 
   return h("section", {},
-    h("div", { class: "card" }, h("h2", {}, "Today"),
+    // Today Overview
+    h("div", { class: "card" },
+      h("h2", {}, "Today's Runway & Metrics"),
       h("div", { class: "grid" },
         h("div", { class: "stat" }, h("b", {}, safe ? fmtMoney(Math.max(0, leftToday)) : "–"), h("span", {}, leftToday != null && leftToday < 0 ? "over today's safe spend" : "left to spend today")),
         h("div", { class: "stat" }, h("b", {}, `${kcalToday} / ${p.calories}`), h("span", {}, "kcal")),
         h("div", { class: "stat" }, h("b", {}, `${proteinToday} / ${p.protein_g} g`), h("span", {}, "protein")),
         h("div", { class: "stat" }, h("b", {}, `${waterToday} / ${p.water_ml}`), h("span", {}, "ml water"))),
-      h("div", { class: "bar" + (leftToday != null && leftToday < 0 ? " over" : "") }, h("i", { style: `width:${safe ? pct(spentToday, safe.safe_daily_spend) : 0}%` }))),
-    h("div", { class: "card" }, h("h2", {}, "Water"),
+      h("div", { class: "bar" + (leftToday != null && leftToday < 0 ? " over" : "") }, h("i", { style: `width:${safe ? pct(spentToday, safe.safe_daily_spend) : 0}%` })),
+      // Macro breakdown
+      h("div", { class: "macro-bars" },
+        h("div", { class: "macro-col" },
+          h("b", {}, `${proteinToday}g`), h("span", {}, `Protein (${pct(proteinToday, p.protein_g)}%)`),
+          h("div", { class: "bar macro-p" }, h("i", { style: `width: ${pct(proteinToday, p.protein_g)}%` }))),
+        h("div", { class: "macro-col" },
+          h("b", {}, `${p.carbs_g ? Math.round(p.carbs_g) : "–"}g`), h("span", {}, "Carbs Target"),
+          h("div", { class: "bar macro-c" }, h("i", { style: `width: 50%` }))),
+        h("div", { class: "macro-col" },
+          h("b", {}, `${p.fat_g ? Math.round(p.fat_g) : "–"}g`), h("span", {}, "Fats Target"),
+          h("div", { class: "bar macro-f" }, h("i", { style: `width: 50%` }))))),
+
+    // Fasting Widget
+    fastingWidget(),
+
+    // Hydration Card
+    h("div", { class: "card" },
+      h("h2", {}, "Hydration"),
+      h("div", { class: "water-pills" },
+        Array.from({ length: waterPillsCount }, (_, i) => h("div", { class: "water-pill" + (i < filledPills ? " filled" : "") }))),
       h("div", { class: "row" },
-        [250, 500].map((ml) => h("button", { onclick: () => addRow("water", { ml }, `Added ${ml} ml`) }, `+${ml} ml`)))),
-    h("div", { class: "card" }, h("h2", {}, "Expense"),
+        h("button", { onclick: () => addRow("water", { ml: 250 }, `Added 250 ml (Glass)`) }, "💧 +250 ml"),
+        h("button", { onclick: () => addRow("water", { ml: 500 }, `Added 500 ml (Bottle)`) }, "🧴 +500 ml"),
+        todayWater.length > 0 && h("button", { class: "del-btn", onclick: () => {
+          const last = todayWater[todayWater.length - 1];
+          removeRow("water", last.id, "Removed last water entry.");
+        } }, "Undo last glass"))),
+
+    // Expense Card
+    h("div", { class: "card" },
+      h("h2", {}, "Expense"),
       h("div", { class: "row" }, h("div", { class: "grow" }, amount)),
-      h("p", { class: "muted" }, "Type the amount, then tap a category."),
-      h("div", { class: "row chips" }, CATEGORIES.map((c) => h("button", { onclick: () => addExpense(c) }, c)))),
-    h("div", { class: "card" }, h("h2", {}, "Meal"),
-      h("div", { class: "row" }, h("div", { class: "grow" }, kcal), h("div", { class: "grow" }, prot),
+      h("p", { class: "muted" }, "Type amount, then tap a category to log instantly:"),
+      h("div", { class: "row chips" }, CATEGORIES.map((c) => h("button", { onclick: () => addExpense(c) }, c))),
+      todayExpenses.length > 0 && h("div", { class: "log-list" },
+        todayExpenses.map((exp) => h("div", { class: "log-item" },
+          h("span", {}, `💰 ${exp.category}: ${fmtMoney(exp.amount)}`),
+          h("button", { class: "del-btn", onclick: () => removeRow("expenses", exp.id, `Removed ${exp.category} expense`) }, "✕"))))),
+
+    // Meal Card
+    h("div", { class: "card" },
+      h("h2", {}, "Meal & Nutrition"),
+      h("div", { class: "row" },
+        h("div", { class: "grow" }, kcal),
+        h("div", { class: "grow" }, prot),
         h("button", { class: "primary", onclick: () => {
           const k = parseFloat(kcal.value);
           if (!(k > 0)) { toast("Enter the calories first."); kcal.focus(); return; }
           addRow("meals", { kcal: k, protein: Math.max(0, parseFloat(prot.value) || 0) }, `Added ${Math.round(k)} kcal`);
-        } }, "Add")),
-      lastMeal && h("div", { class: "row", style: "margin-top:8px" },
+          kcal.value = "";
+          prot.value = "";
+        } }, "Add Meal")),
+      h("p", { class: "muted", style: "margin-top: 10px;" }, "Quick meal presets:"),
+      h("div", { class: "row chips" },
+        MEAL_PRESETS.map((m) => h("button", { onclick: () => addRow("meals", { kcal: m.kcal, protein: m.protein }, `Added ${m.label}`) }, m.label))),
+      lastMeal && h("div", { class: "row", style: "margin-top: 8px;" },
         h("button", { onclick: () => addRow("meals", { kcal: lastMeal.kcal, protein: lastMeal.protein }, `Repeated ${Math.round(lastMeal.kcal)} kcal`) },
-          `Repeat last meal (${Math.round(lastMeal.kcal)} kcal)`))));
+          `Repeat last meal (${Math.round(lastMeal.kcal)} kcal)`)),
+      todayMeals.length > 0 && h("div", { class: "log-list" },
+        todayMeals.map((meal) => h("div", { class: "log-item" },
+          h("span", {}, `🥗 ${Math.round(meal.kcal)} kcal, ${meal.protein || 0}g protein`),
+          h("button", { class: "del-btn", onclick: () => removeRow("meals", meal.id, `Removed meal entry`) }, "✕"))))));
 }
 
 function reviewView() {
@@ -295,7 +451,6 @@ async function runReview() {
     });
     reviewState = { status: data.status, data };
     if (data.status === "ok") {
-      // Local, private run counter. Nothing is sent anywhere.
       state.reviews.push({ at: new Date().toISOString(), week_end: data.period.end, days_logged: data.days_logged, actions: data.actions.length });
       await store.save(state);
     }
@@ -332,17 +487,57 @@ async function plainSummary(d) {
   }
 }
 
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `smartassistant-backup-${todayIso()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Backup exported successfully.");
+}
+
+function importBackup(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      state = normalize(parsed);
+      await commit("Backup restored successfully!");
+    } catch {
+      toast("Invalid backup file.");
+    }
+  };
+  reader.readAsText(file);
+}
+
 function settingsView() {
   const done = state.reviews.length;
+  const streak = calculateStreak();
+  const fileInput = h("input", { type: "file", accept: ".json", style: "display:none;", onchange: importBackup });
+
   return h("section", {},
     h("div", { class: "card" }, h("h2", {}, "Targets"),
       h("p", {}, `${state.profile.calories} kcal, ${state.profile.protein_g} g protein, ${state.profile.water_ml} ml water per day.`),
       h("p", { class: "muted" }, `Monthly budget ${fmtMoney(state.profile.monthly_budget)}, fixed costs ${fmtMoney(state.profile.fixed_costs)}.`),
       h("button", { onclick: async () => { state.profile = null; state.plan = null; await commit(); } }, "Change my numbers")),
-    h("div", { class: "card" }, h("h2", {}, "Your history"),
-      h("p", {}, `${state.expenses.length} expenses, ${state.meals.length} meals and ${state.water.length} water entries are stored. Reviews completed: ${done}.`),
-      h("p", { class: "muted" }, `Entries older than ${KEEP_DAYS} days are removed automatically.`)),
-    h("div", { class: "card" }, h("h2", {}, "Delete everything"),
+
+    h("div", { class: "card" }, h("h2", {}, "Your Consistency & Stats"),
+      h("p", {}, `🔥 Current Streak: ${streak} day${streak === 1 ? "" : "s"} in a row.`),
+      h("p", {}, `${state.expenses.length} expenses, ${state.meals.length} meals and ${state.water.length} water entries stored. Reviews completed: ${done}.`),
+      h("p", { class: "muted" }, `Entries older than ${KEEP_DAYS} days are automatically pruned to keep your Anna storage lightweight.`)),
+
+    h("div", { class: "card" }, h("h2", {}, "Backup & Privacy"),
+      h("p", { class: "muted" }, "Your data is stored locally in Anna storage. You can export or restore anytime:"),
+      h("div", { class: "row" },
+        h("button", { onclick: exportBackup }, "📥 Export Data (JSON)"),
+        h("button", { onclick: () => fileInput.click() }, "📤 Restore from Backup"),
+        fileInput)),
+
+    h("div", { class: "card" }, h("h2", {}, "Reset"),
       h("button", { onclick: async () => {
         if (!confirm("Delete all entries and targets? This cannot be undone.")) return;
         state = normalize(null); reviewState = { status: "idle" }; view = "today"; await commit("All data deleted.");
@@ -352,9 +547,18 @@ function settingsView() {
 function render() {
   $app.setAttribute("aria-busy", "false");
   if (!state.profile) { $app.replaceChildren(onboardingView()); return; }
+
+  const streak = calculateStreak();
   const tab = (id, label) => h("button", { "aria-current": view === id ? "page" : null, onclick: () => { view = id; render(); } }, label);
   const views = { today: todayView, review: reviewView, settings: settingsView };
-  $app.replaceChildren(h("nav", { class: "tabs", "aria-label": "Sections" }, tab("today", "Today"), tab("review", "Weekly review"), tab("settings", "Settings")), views[view]());
+
+  $app.replaceChildren(
+    h("nav", { class: "tabs", "aria-label": "Sections" },
+      tab("today", "Today"),
+      tab("review", "Weekly review"),
+      tab("settings", "Settings"),
+      streak > 0 && h("span", { class: "streak-badge", title: `${streak} day streak` }, `🔥 ${streak}d`)),
+    views[view]());
 }
 
 async function main() {
@@ -362,6 +566,10 @@ async function main() {
   try {
     state = await store.load();
     render();
+    // Live ticking timer for fasting
+    setInterval(() => {
+      if (state.fasting && view === "today") render();
+    }, 60000);
   } catch (e) {
     $app.setAttribute("aria-busy", "false");
     $app.replaceChildren(h("p", { class: "error", role: "alert" }, "Could not load your data: " + (e.message || e)),

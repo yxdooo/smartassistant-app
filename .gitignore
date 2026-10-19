@@ -13,3 +13,8 @@ backend/prisma/*.db
 backend/prisma/*.db-journal
 backend/uploads/
 frontend/dist/
+.anna/
+**/.anna/
+.venv/
+**/__pycache__/
+*.egg-info/
