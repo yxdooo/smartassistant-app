@@ -147,3 +147,18 @@ Visit **`http://localhost:5173`**.
 
 ## 📄 License
 This project is open-source and released under the **MIT License**.
+
+
+---
+
+## SmartAssistant on Anna
+
+The `anna/` directory is a separate build of SmartAssistant for [Anna](https://anna.partners). It is a small static app plus a Python Executa, and it does not need the backend in `backend/` or the React app in `frontend/`. Those still work on their own.
+
+What the Anna app does:
+
+- A one-minute setup (budget, fixed costs, weight, height, age, goal) that returns a safe daily spend and daily calorie, protein and water targets.
+- Logging an expense, a meal or a glass of water in one or two taps.
+- A weekly review of the last 7 days: spending against your weekly allowance, your biggest category, average calories and protein against target, and water goal days, followed by specific changes for next week. With fewer than 3 logged days it says so instead of guessing.
+
+See [anna/README.md](anna/README.md) for development, tests, the Linux binary build and the publishing checklist.

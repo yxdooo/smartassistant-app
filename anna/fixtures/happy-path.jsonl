@@ -1,0 +1,4 @@
+{"ns":"storage","method":"get","result":{"value":null,"exists":false}}
+{"ns":"storage","method":"set","result":{"ok":true}}
+{"ns":"window","method":"ready","result":{"ok":true}}
+{"ns":"window","method":"set_title","result":{"ok":true}}
