@@ -1,0 +1,18 @@
+[project]
+name = "tool-dev-smartassistant"
+version = "0.1.0"
+description = "SmartAssistant Executa: daily targets and weekly money and nutrition review."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+# The script name must equal project.name because `anna-app dev` runs
+# the Executa with `uvx <project.name>`.
+"tool-dev-smartassistant" = "smartassistant_plugin:main"
+
+[tool.setuptools]
+py-modules = ["smartassistant_plugin"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

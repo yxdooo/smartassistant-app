@@ -1,0 +1,695 @@
+[
+  {
+    "tool": "plan_targets",
+    "args": {
+      "weight_kg": 70,
+      "height_cm": 170,
+      "age": 30,
+      "sex": "female",
+      "activity": "light",
+      "goal": "lose",
+      "monthly_budget": 1500,
+      "fixed_costs": 600,
+      "spent_so_far": 200,
+      "today": "2026-03-10"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "calories": 1500,
+        "protein_g": 140,
+        "fat_g": 42,
+        "carbs_g": 140,
+        "water_ml": 2450,
+        "bmr": 1452,
+        "maintenance_calories": 2000,
+        "safe_daily_spend": 31.82,
+        "spendable_this_month": 900.0,
+        "remaining_this_month": 700.0,
+        "days_left_in_month": 22,
+        "over_budget": false
+      }
+    }
+  },
+  {
+    "tool": "plan_targets",
+    "args": {
+      "weight_kg": 85,
+      "height_cm": 182,
+      "age": 25,
+      "sex": "male",
+      "activity": "active",
+      "goal": "gain",
+      "monthly_budget": 900,
+      "today": "2026-02-28"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "calories": 3520,
+        "protein_g": 153,
+        "fat_g": 98,
+        "carbs_g": 507,
+        "water_ml": 3000,
+        "bmr": 1868,
+        "maintenance_calories": 3220,
+        "safe_daily_spend": 900.0,
+        "spendable_this_month": 900.0,
+        "remaining_this_month": 900.0,
+        "days_left_in_month": 1,
+        "over_budget": false
+      }
+    }
+  },
+  {
+    "tool": "plan_targets",
+    "args": {
+      "weight_kg": 50,
+      "height_cm": 160,
+      "age": 40,
+      "sex": "female",
+      "activity": "sedentary",
+      "goal": "lose",
+      "monthly_budget": 500,
+      "fixed_costs": 400,
+      "spent_so_far": 300,
+      "today": "2026-12-31"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "calories": 1200,
+        "protein_g": 100,
+        "fat_g": 33,
+        "carbs_g": 125,
+        "water_ml": 1750,
+        "bmr": 1139,
+        "maintenance_calories": 1370,
+        "safe_daily_spend": 0.0,
+        "spendable_this_month": 100.0,
+        "remaining_this_month": -200.0,
+        "days_left_in_month": 1,
+        "over_budget": true
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "monthly_budget": 2000,
+        "fixed_costs": 800,
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 40,
+          "category": "Food"
+        },
+        {
+          "date": "2026-03-10",
+          "amount": 15,
+          "category": "Transport"
+        },
+        {
+          "date": "2026-03-12",
+          "amount": 120,
+          "category": "Eating out"
+        },
+        {
+          "date": "2026-03-14",
+          "amount": 60,
+          "category": "Food"
+        }
+      ],
+      "meals": [
+        {
+          "date": "2026-03-09",
+          "kcal": 2300,
+          "protein": 70
+        },
+        {
+          "date": "2026-03-10",
+          "kcal": 2100,
+          "protein": 80
+        },
+        {
+          "date": "2026-03-12",
+          "kcal": 2600,
+          "protein": 75
+        }
+      ],
+      "water": [
+        {
+          "date": "2026-03-09",
+          "ml": 2200
+        },
+        {
+          "date": "2026-03-10",
+          "ml": 800
+        },
+        {
+          "date": "2026-03-12",
+          "ml": 2500
+        }
+      ]
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "ok",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 4,
+        "headline": "Week of Mar 09: 35.97 under budget, 2333 kcal/day vs 2000 target",
+        "money": {
+          "spent": 235.0,
+          "weekly_allowance": 270.97,
+          "difference": -35.97,
+          "status": "under",
+          "top_categories": [
+            {
+              "category": "Eating out",
+              "amount": 120.0,
+              "share": 0.511
+            },
+            {
+              "category": "Food",
+              "amount": 100.0,
+              "share": 0.426
+            },
+            {
+              "category": "Transport",
+              "amount": 15.0,
+              "share": 0.064
+            }
+          ],
+          "priciest_day": {
+            "date": "2026-03-12",
+            "amount": 120.0
+          }
+        },
+        "nutrition": {
+          "meal_days": 3,
+          "avg_calories": 2333,
+          "calorie_target": 2000,
+          "avg_protein_g": 75,
+          "protein_target_g": 120,
+          "water_days": 3,
+          "water_days_on_target": 2,
+          "avg_water_ml": 1850,
+          "water_target_ml": 2500
+        },
+        "actions": [
+          "You finished 35.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
+          "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
+          "On the 3 days you logged meals, you averaged 2333 kcal, 333 above your 2000 kcal target.",
+          "Protein averaged 75 g against a 120 g target. Adding about 45 g per day closes the gap.",
+          "You reached 80% of your 2500 ml water goal on 2 of 3 logged days."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "monthly_budget": 2000,
+        "fixed_costs": 800,
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 150,
+          "category": "Food"
+        },
+        {
+          "date": "2026-03-11",
+          "amount": 200,
+          "category": "Eating out"
+        },
+        {
+          "date": "2026-03-13",
+          "amount": 90,
+          "category": "Food"
+        }
+      ],
+      "meals": [
+        {
+          "date": "2026-03-09",
+          "kcal": 2300,
+          "protein": 70
+        },
+        {
+          "date": "2026-03-10",
+          "kcal": 2100,
+          "protein": 80
+        },
+        {
+          "date": "2026-03-12",
+          "kcal": 2600,
+          "protein": 75
+        }
+      ],
+      "water": [
+        {
+          "date": "2026-03-09",
+          "ml": 2200
+        },
+        {
+          "date": "2026-03-10",
+          "ml": 800
+        },
+        {
+          "date": "2026-03-12",
+          "ml": 2500
+        }
+      ]
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "ok",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 5,
+        "headline": "Week of Mar 09: 169.03 over budget, 2333 kcal/day vs 2000 target",
+        "money": {
+          "spent": 440.0,
+          "weekly_allowance": 270.97,
+          "difference": 169.03,
+          "status": "over",
+          "top_categories": [
+            {
+              "category": "Food",
+              "amount": 240.0,
+              "share": 0.545
+            },
+            {
+              "category": "Eating out",
+              "amount": 200.0,
+              "share": 0.455
+            }
+          ],
+          "priciest_day": {
+            "date": "2026-03-11",
+            "amount": 200.0
+          }
+        },
+        "nutrition": {
+          "meal_days": 3,
+          "avg_calories": 2333,
+          "calorie_target": 2000,
+          "avg_protein_g": 75,
+          "protein_target_g": 120,
+          "water_days": 3,
+          "water_days_on_target": 2,
+          "avg_water_ml": 1850,
+          "water_target_ml": 2500
+        },
+        "actions": [
+          "You spent 440.00 against a weekly allowance of 270.97, which is 169.03 over. Food was the biggest category at 240.00. Trimming it by 169.03 next week puts you back on pace.",
+          "45% of the week's spending landed on Wednesday. Check if that purchase could have been planned or split.",
+          "On the 3 days you logged meals, you averaged 2333 kcal, 333 above your 2000 kcal target.",
+          "Protein averaged 75 g against a 120 g target. Adding about 45 g per day closes the gap.",
+          "You reached 80% of your 2500 ml water goal on 2 of 3 logged days."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "monthly_budget": 2000,
+        "fixed_costs": 800,
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 20,
+          "category": "Food"
+        },
+        {
+          "date": "2026-03-11",
+          "amount": 10,
+          "category": "Food"
+        }
+      ],
+      "meals": [
+        {
+          "date": "2026-03-09",
+          "kcal": 2300,
+          "protein": 70
+        },
+        {
+          "date": "2026-03-10",
+          "kcal": 2100,
+          "protein": 80
+        },
+        {
+          "date": "2026-03-12",
+          "kcal": 2600,
+          "protein": 75
+        }
+      ],
+      "water": [
+        {
+          "date": "2026-03-09",
+          "ml": 2200
+        },
+        {
+          "date": "2026-03-10",
+          "ml": 800
+        },
+        {
+          "date": "2026-03-12",
+          "ml": 2500
+        }
+      ]
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "ok",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 4,
+        "headline": "Week of Mar 09: 240.97 under budget, 2333 kcal/day vs 2000 target",
+        "money": {
+          "spent": 30.0,
+          "weekly_allowance": 270.97,
+          "difference": -240.97,
+          "status": "under",
+          "top_categories": [
+            {
+              "category": "Food",
+              "amount": 30.0,
+              "share": 1.0
+            }
+          ],
+          "priciest_day": {
+            "date": "2026-03-09",
+            "amount": 20.0
+          }
+        },
+        "nutrition": {
+          "meal_days": 3,
+          "avg_calories": 2333,
+          "calorie_target": 2000,
+          "avg_protein_g": 75,
+          "protein_target_g": 120,
+          "water_days": 3,
+          "water_days_on_target": 2,
+          "avg_water_ml": 1850,
+          "water_target_ml": 2500
+        },
+        "actions": [
+          "You finished 240.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
+          "67% of the week's spending landed on Monday. Check if that purchase could have been planned or split.",
+          "On the 3 days you logged meals, you averaged 2333 kcal, 333 above your 2000 kcal target.",
+          "Protein averaged 75 g against a 120 g target. Adding about 45 g per day closes the gap.",
+          "You reached 80% of your 2500 ml water goal on 2 of 3 logged days."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "monthly_budget": 2000,
+        "fixed_costs": 800,
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 40,
+          "category": "Food"
+        },
+        {
+          "date": "2026-03-10",
+          "amount": 15,
+          "category": "Transport"
+        },
+        {
+          "date": "2026-03-12",
+          "amount": 120,
+          "category": "Eating out"
+        },
+        {
+          "date": "2026-03-14",
+          "amount": 60,
+          "category": "Food"
+        }
+      ],
+      "meals": [],
+      "water": [
+        {
+          "date": "2026-03-09",
+          "ml": 2200
+        },
+        {
+          "date": "2026-03-10",
+          "ml": 800
+        },
+        {
+          "date": "2026-03-12",
+          "ml": 2500
+        }
+      ]
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "ok",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 4,
+        "headline": "Week of Mar 09: 35.97 under budget",
+        "money": {
+          "spent": 235.0,
+          "weekly_allowance": 270.97,
+          "difference": -35.97,
+          "status": "under",
+          "top_categories": [
+            {
+              "category": "Eating out",
+              "amount": 120.0,
+              "share": 0.511
+            },
+            {
+              "category": "Food",
+              "amount": 100.0,
+              "share": 0.426
+            },
+            {
+              "category": "Transport",
+              "amount": 15.0,
+              "share": 0.064
+            }
+          ],
+          "priciest_day": {
+            "date": "2026-03-12",
+            "amount": 120.0
+          }
+        },
+        "nutrition": {
+          "meal_days": 0,
+          "avg_calories": 0,
+          "calorie_target": 2000,
+          "avg_protein_g": 0,
+          "protein_target_g": 120,
+          "water_days": 3,
+          "water_days_on_target": 2,
+          "avg_water_ml": 1850,
+          "water_target_ml": 2500
+        },
+        "actions": [
+          "You finished 35.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
+          "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
+          "No meals were logged this week, so there is no calorie or protein comparison yet.",
+          "You reached 80% of your 2500 ml water goal on 2 of 3 logged days."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 40,
+          "category": "Food"
+        },
+        {
+          "date": "2026-03-10",
+          "amount": 15,
+          "category": "Transport"
+        },
+        {
+          "date": "2026-03-12",
+          "amount": 120,
+          "category": "Eating out"
+        },
+        {
+          "date": "2026-03-14",
+          "amount": 60,
+          "category": "Food"
+        }
+      ],
+      "meals": [
+        {
+          "date": "2026-03-09",
+          "kcal": 2300,
+          "protein": 70
+        },
+        {
+          "date": "2026-03-10",
+          "kcal": 2100,
+          "protein": 80
+        },
+        {
+          "date": "2026-03-12",
+          "kcal": 2600,
+          "protein": 75
+        }
+      ],
+      "water": [
+        {
+          "date": "2026-03-09",
+          "ml": 2200
+        },
+        {
+          "date": "2026-03-10",
+          "ml": 800
+        },
+        {
+          "date": "2026-03-12",
+          "ml": 2500
+        }
+      ]
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "ok",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 4,
+        "headline": "Week of Mar 09: 2333 kcal/day vs 2000 target",
+        "money": {
+          "spent": 235.0,
+          "weekly_allowance": 0.0,
+          "difference": 235.0,
+          "status": "no_budget",
+          "top_categories": [
+            {
+              "category": "Eating out",
+              "amount": 120.0,
+              "share": 0.511
+            },
+            {
+              "category": "Food",
+              "amount": 100.0,
+              "share": 0.426
+            },
+            {
+              "category": "Transport",
+              "amount": 15.0,
+              "share": 0.064
+            }
+          ],
+          "priciest_day": {
+            "date": "2026-03-12",
+            "amount": 120.0
+          }
+        },
+        "nutrition": {
+          "meal_days": 3,
+          "avg_calories": 2333,
+          "calorie_target": 2000,
+          "avg_protein_g": 75,
+          "protein_target_g": 120,
+          "water_days": 3,
+          "water_days_on_target": 2,
+          "avg_water_ml": 1850,
+          "water_target_ml": 2500
+        },
+        "actions": [
+          "Set a monthly budget to compare weekly spending against an allowance.",
+          "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
+          "On the 3 days you logged meals, you averaged 2333 kcal, 333 above your 2000 kcal target.",
+          "Protein averaged 75 g against a 120 g target. Adding about 45 g per day closes the gap.",
+          "You reached 80% of your 2500 ml water goal on 2 of 3 logged days."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "weekly_review",
+    "args": {
+      "profile": {
+        "monthly_budget": 2000,
+        "fixed_costs": 800,
+        "calories": 2000,
+        "protein_g": 120,
+        "water_ml": 2500
+      },
+      "week_end": "2026-03-15",
+      "expenses": [
+        {
+          "date": "2026-03-09",
+          "amount": 5
+        }
+      ],
+      "meals": [],
+      "water": []
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "status": "insufficient_data",
+        "period": {
+          "start": "2026-03-09",
+          "end": "2026-03-15"
+        },
+        "days_logged": 1,
+        "message": "Only 1 of the last 7 days have entries. Log 2 more days (an expense, a meal or a glass of water counts) and run the review again."
+      }
+    }
+  }
+]
