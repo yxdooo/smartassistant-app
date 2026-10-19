@@ -1,118 +1,139 @@
 {
   "name": "tool-dev-smartassistant",
   "display_name": "SmartAssistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Daily safe spend, nutrition targets and a weekly money and nutrition review.",
   "tools": [
     {
       "name": "ping",
       "description": "Smoke-test method.",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": [],
-        "additionalProperties": false
-      }
+      "parameters": []
     },
     {
       "name": "plan_targets",
       "description": "Compute calorie, macro and water targets and the safe daily spend for the rest of the month.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "weight_kg": {
-            "type": "number"
-          },
-          "height_cm": {
-            "type": "number"
-          },
-          "age": {
-            "type": "number"
-          },
-          "sex": {
-            "type": "string",
-            "enum": [
-              "female",
-              "male"
-            ]
-          },
-          "activity": {
-            "type": "string",
-            "enum": [
-              "sedentary",
-              "light",
-              "moderate",
-              "active"
-            ]
-          },
-          "goal": {
-            "type": "string",
-            "enum": [
-              "lose",
-              "maintain",
-              "gain"
-            ]
-          },
-          "monthly_budget": {
-            "type": "number"
-          },
-          "fixed_costs": {
-            "type": "number"
-          },
-          "spent_so_far": {
-            "type": "number"
-          },
-          "today": {
-            "type": "string",
-            "description": "YYYY-MM-DD, defaults to today"
-          }
+      "parameters": [
+        {
+          "name": "weight_kg",
+          "type": "number",
+          "description": "Weight in kilograms",
+          "required": true
         },
-        "required": [
-          "weight_kg",
-          "height_cm",
-          "age",
-          "monthly_budget"
-        ],
-        "additionalProperties": false
-      }
+        {
+          "name": "height_cm",
+          "type": "number",
+          "description": "Height in centimeters",
+          "required": true
+        },
+        {
+          "name": "age",
+          "type": "number",
+          "description": "Age in years",
+          "required": true
+        },
+        {
+          "name": "monthly_budget",
+          "type": "number",
+          "description": "Monthly budget amount",
+          "required": true
+        },
+        {
+          "name": "sex",
+          "type": "string",
+          "enum": [
+            "female",
+            "male"
+          ],
+          "description": "Biological sex for calorie formula (female or male)",
+          "required": false
+        },
+        {
+          "name": "activity",
+          "type": "string",
+          "enum": [
+            "sedentary",
+            "light",
+            "moderate",
+            "active"
+          ],
+          "description": "Activity level (sedentary, light, moderate, active)",
+          "required": false
+        },
+        {
+          "name": "goal",
+          "type": "string",
+          "enum": [
+            "lose",
+            "maintain",
+            "gain"
+          ],
+          "description": "Fitness goal (lose, maintain, gain)",
+          "required": false
+        },
+        {
+          "name": "fixed_costs",
+          "type": "number",
+          "description": "Fixed monthly expenses like rent and bills",
+          "required": false
+        },
+        {
+          "name": "spent_so_far",
+          "type": "number",
+          "description": "Amount already spent this month",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "string",
+          "description": "Reference date YYYY-MM-DD",
+          "required": false
+        }
+      ]
     },
     {
       "name": "weekly_review",
       "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with specific actions.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "profile": {
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "object",
+          "description": "User profile with budget and nutrition targets",
+          "required": true
+        },
+        {
+          "name": "expenses",
+          "type": "array",
+          "items": {
             "type": "object"
           },
-          "expenses": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "meals": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "water": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "week_end": {
-            "type": "string",
-            "description": "YYYY-MM-DD, defaults to today"
-          }
+          "description": "Logged expenses with amount, category, date",
+          "required": false
         },
-        "required": [
-          "profile"
-        ],
-        "additionalProperties": false
-      }
+        {
+          "name": "meals",
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Logged meals with calories, protein, date",
+          "required": false
+        },
+        {
+          "name": "water",
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Logged water entries with milliliters or glasses, date",
+          "required": false
+        },
+        {
+          "name": "week_end",
+          "type": "string",
+          "description": "End date of 7-day review YYYY-MM-DD",
+          "required": false
+        }
+      ]
     }
   ]
 }

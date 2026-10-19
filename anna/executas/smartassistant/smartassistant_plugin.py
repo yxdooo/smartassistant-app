@@ -20,7 +20,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from calendar import monthrange
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 MIN_LOGGED_DAYS = 3
 
 ACTIVITY = {
@@ -308,40 +308,34 @@ MANIFEST = {
         {
             "name": "ping",
             "description": "Smoke-test method.",
-            "parameters": _schema({}),
+            "parameters": [],
         },
         {
             "name": "plan_targets",
             "description": "Compute calorie, macro and water targets and the safe daily spend for the rest of the month.",
-            "parameters": _schema(
-                {
-                    "weight_kg": {"type": "number"},
-                    "height_cm": {"type": "number"},
-                    "age": {"type": "number"},
-                    "sex": {"type": "string", "enum": ["female", "male"]},
-                    "activity": {"type": "string", "enum": list(ACTIVITY)},
-                    "goal": {"type": "string", "enum": list(KCAL_ADJUST)},
-                    "monthly_budget": {"type": "number"},
-                    "fixed_costs": {"type": "number"},
-                    "spent_so_far": {"type": "number"},
-                    "today": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
-                },
-                ["weight_kg", "height_cm", "age", "monthly_budget"],
-            ),
+            "parameters": [
+                {"name": "weight_kg", "type": "number", "description": "Weight in kilograms", "required": True},
+                {"name": "height_cm", "type": "number", "description": "Height in centimeters", "required": True},
+                {"name": "age", "type": "number", "description": "Age in years", "required": True},
+                {"name": "monthly_budget", "type": "number", "description": "Monthly budget amount", "required": True},
+                {"name": "sex", "type": "string", "enum": ["female", "male"], "description": "Biological sex for calorie formula (female or male)", "required": False},
+                {"name": "activity", "type": "string", "enum": list(ACTIVITY), "description": "Activity level (sedentary, light, moderate, active)", "required": False},
+                {"name": "goal", "type": "string", "enum": list(KCAL_ADJUST), "description": "Fitness goal (lose, maintain, gain)", "required": False},
+                {"name": "fixed_costs", "type": "number", "description": "Fixed monthly expenses like rent and bills", "required": False},
+                {"name": "spent_so_far", "type": "number", "description": "Amount already spent this month", "required": False},
+                {"name": "today", "type": "string", "description": "Reference date YYYY-MM-DD", "required": False},
+            ],
         },
         {
             "name": "weekly_review",
             "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with specific actions.",
-            "parameters": _schema(
-                {
-                    "profile": {"type": "object"},
-                    "expenses": _ROWS,
-                    "meals": _ROWS,
-                    "water": _ROWS,
-                    "week_end": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
-                },
-                ["profile"],
-            ),
+            "parameters": [
+                {"name": "profile", "type": "object", "description": "User profile with budget and nutrition targets", "required": True},
+                {"name": "expenses", "type": "array", "items": {"type": "object"}, "description": "Logged expenses with amount, category, date", "required": False},
+                {"name": "meals", "type": "array", "items": {"type": "object"}, "description": "Logged meals with calories, protein, date", "required": False},
+                {"name": "water", "type": "array", "items": {"type": "object"}, "description": "Logged water entries with milliliters or glasses, date", "required": False},
+                {"name": "week_end", "type": "string", "description": "End date of 7-day review YYYY-MM-DD", "required": False},
+            ],
         },
     ],
 }
