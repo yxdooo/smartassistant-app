@@ -10,7 +10,7 @@
   "enabled": true,
 
   "distribution": {
-    "active": "binary",
+    "active": "local",
     "profiles": {
       "local": {
         "type": "local",
