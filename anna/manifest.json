@@ -7,7 +7,7 @@
     }
   ],
   "optional_executas": [],
-  "system_prompt_addendum": "The user has SmartAssistant open. It logs expenses, meals and water, and its weekly review compares the last 7 days with the user's budget and nutrition targets. Do not open extra windows.",
+  "system_prompt_addendum": "SmartAssistant tracks personal budget runway, daily safe spend, nutrition macros, intermittent fasting, and weekly reviews. When the user asks to open SmartAssistant, view their dashboard, log expenses or meals, or start their review, summon the app window via open_app_view with this app's numeric app_id.",
   "tags": ["budget", "nutrition", "weekly-review", "water"],
   "ui": {
     "bundle": {
@@ -20,6 +20,7 @@
         "name": "main",
         "title": "SmartAssistant",
         "default": true,
+        "single_instance": true,
         "default_size": { "w": 480, "h": 720 },
         "min_size": { "w": 320, "h": 480 }
       }
