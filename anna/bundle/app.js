@@ -119,7 +119,7 @@ async function callTool(method, args) {
 
 // ---------- state + helpers ----------
 let state = normalize(null);
-let view = "today";
+let view = new URLSearchParams(location.search).get("view") || "today";
 let reviewState = { status: "idle" };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -409,6 +409,9 @@ function todayView() {
 }
 
 function reviewView() {
+  if (reviewState.status === "idle" && state.reviews && state.reviews.length > 0) {
+    reviewState = { status: "ok", data: state.reviews[state.reviews.length - 1] };
+  }
   const r = reviewState;
   let body;
   if (r.status === "loading") body = h("p", { role: "status" }, h("span", { class: "spinner" }), "Reviewing your last 7 days…");

@@ -20,7 +20,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from calendar import monthrange
 
-VERSION = "0.1.1"
+VERSION = "0.1.4"
 MIN_LOGGED_DAYS = 3
 
 ACTIVITY = {

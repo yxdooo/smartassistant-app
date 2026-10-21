@@ -65,7 +65,7 @@ jobs:
         run: |
           out="$(printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":1}' | "./dist/$TOOL_ID")"
           echo "$out"
-          printf '%s' "$out" | python3 -c "import sys,json,os; d=json.load(sys.stdin)['result']; assert d['name']==os.environ['TOOL_ID']; assert [t['name'] for t in d['tools']]==['ping','plan_targets','weekly_review']"
+          printf '%s' "$out" | python3 -c "import sys,json,os; d=json.load(sys.stdin)['result']; assert d['name']==os.environ['TOOL_ID']; assert [t['name'] for t in d['tools']]==['ping','plan_targets','weekly_review']; assert all(isinstance(t['parameters'], list) for t in d['tools'])"
           review='{"jsonrpc":"2.0","method":"invoke","id":2,"params":{"tool":"plan_targets","arguments":{"weight_kg":70,"height_cm":170,"age":30,"monthly_budget":1500,"today":"2026-03-10"}}}'
           printf '%s\n' "$review" | "./dist/$TOOL_ID" | python3 -c "import sys,json; r=json.load(sys.stdin)['result']; assert r['success'] and r['data']['calories']>0"
       - name: Package

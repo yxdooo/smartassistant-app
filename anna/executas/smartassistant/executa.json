@@ -1,7 +1,7 @@
 {
   "slug": "smartassistant",
   "name": "SmartAssistant",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "executa_type": "tool",
   "description": "Plans daily targets and reviews a week of spending, calories, protein and water. Standard library only.",
 
@@ -22,17 +22,17 @@
         "supports_protocol": true,
         "binary_urls": {
           "darwin-arm64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.1/tool-dev-smartassistant-darwin-arm64.tar.gz",
+            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.4/tool-dev-smartassistant-darwin-arm64.tar.gz",
             "entrypoint": "tool-dev-smartassistant",
             "format": "tar.gz"
           },
           "darwin-x86_64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.1/tool-dev-smartassistant-darwin-x86_64.tar.gz",
+            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.4/tool-dev-smartassistant-darwin-x86_64.tar.gz",
             "entrypoint": "tool-dev-smartassistant",
             "format": "tar.gz"
           },
           "linux-x86_64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.1/tool-dev-smartassistant-linux-x86_64.tar.gz",
+            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.4/tool-dev-smartassistant-linux-x86_64.tar.gz",
             "entrypoint": "tool-dev-smartassistant",
             "format": "tar.gz"
           }

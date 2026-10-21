@@ -128,8 +128,11 @@ class Protocol(unittest.TestCase):
         self.assertFalse(plugin.invoke("nope", {})["success"])
 
     def test_describe_lists_tools(self):
-        names = [t["name"] for t in plugin._handle({"method": "describe"})["tools"]]
+        tools = plugin._handle({"method": "describe"})["tools"]
+        names = [t["name"] for t in tools]
         self.assertEqual(names, ["ping", "plan_targets", "weekly_review"])
+        for t in tools:
+            self.assertIsInstance(t["parameters"], list)
 
     def test_invoke_envelope(self):
         r = plugin._handle({"method": "invoke", "params": {"tool": "ping", "arguments": {}}})
