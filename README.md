@@ -145,6 +145,17 @@ Visit **`http://localhost:5173`**.
 
 ---
 
+## 🔒 Privacy
+
+SmartAssistant is built with a strict offline-first, local-storage architecture:
+
+- **Local Storage:** All financial runway numbers, logged meals, and hydration data are stored exclusively in your local storage / Anna storage (`smartassistant:v1`). No data is sent to external servers or telemetry services.
+- **Data Retention & Auto-Pruning:** Entries older than 120 days are automatically deleted to keep your storage lightweight.
+- **Full Data Wipe:** You can permanently delete all stored profile targets and entries at any time via the "Delete all my data" button in Settings.
+- **Medical Disclaimer:** Calorie, macronutrient, and metabolic burn estimates use the clinical Mifflin-St Jeor formula and are for informational purposes only, not medical advice.
+
+---
+
 ## 📄 License
 This project is open-source and released under the **MIT License**.
 

@@ -48,6 +48,15 @@ The workflow was not run from this machine. Check the first run on GitHub.
 
 A qualified run needs a signed-in user, a successful primary function and a non-trivial result. Here that is a weekly review that returns `status: "ok"` (at least 3 of the last 7 days logged). Use the Anna Developer Console for the official numbers. Do not add paid, bot or incentivized usage.
 
+## Privacy
+
+SmartAssistant operates with strict user privacy and offline-first principles:
+
+- **Local Storage:** All financial runway numbers, logged meals, and hydration data are stored exclusively in your local Anna storage (`smartassistant:v1`). No data is sent to external servers or telemetry services.
+- **Data Retention & Auto-Pruning:** Entries older than 120 days are automatically deleted to keep your storage lightweight.
+- **Full Data Wipe:** You can permanently delete all stored profile targets and entries at any time via the "Delete all my data" button in Settings.
+- **Medical Disclaimer:** Calorie, macronutrient, and metabolic burn estimates use the clinical Mifflin-St Jeor formula and are for informational purposes only, not medical advice.
+
 ## Before you publish (you do these)
 
 - [ ] Run `anna-app validate --strict` and confirm `executa-v0.1.0` assets exist on GitHub.

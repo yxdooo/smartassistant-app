@@ -410,7 +410,10 @@ function todayView() {
 
 function reviewView() {
   if (reviewState.status === "idle" && state.reviews && state.reviews.length > 0) {
-    reviewState = { status: "ok", data: state.reviews[state.reviews.length - 1] };
+    const last = state.reviews[state.reviews.length - 1];
+    if (last && Array.isArray(last.actions) && last.money && last.nutrition) {
+      reviewState = { status: "ok", data: last };
+    }
   }
   const r = reviewState;
   let body;
@@ -454,7 +457,15 @@ async function runReview() {
     });
     reviewState = { status: data.status, data };
     if (data.status === "ok") {
-      state.reviews.push({ at: new Date().toISOString(), week_end: data.period.end, days_logged: data.days_logged, actions: data.actions.length });
+      state.reviews.push({
+        at: new Date().toISOString(),
+        week_end: data.period?.end || todayIso(),
+        days_logged: data.days_logged,
+        headline: data.headline,
+        money: data.money,
+        nutrition: data.nutrition,
+        actions: data.actions
+      });
       await store.save(state);
     }
   } catch (e) {
