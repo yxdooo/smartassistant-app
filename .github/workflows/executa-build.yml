@@ -46,7 +46,7 @@ jobs:
           - { os: ubuntu-latest, name: linux-x86_64, python_arch: "" }
           - { os: macos-14, name: darwin-arm64, python_arch: "" }
           # Intel macOS builds on an Apple Silicon runner with an x64 Python.
-          - { os: macos-15, name: darwin-x86_64, python_arch: x64 }
+          - { os: macos-14, name: darwin-x86_64, python_arch: x64 }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
