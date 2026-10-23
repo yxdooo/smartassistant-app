@@ -35,7 +35,7 @@ jobs:
         run: |
           curl -s \
             -H "Title: MUJDE! SmartAssistant Onaylandi!" \
-            -H "Priority: max" \
+            -H "Priority: low" \
             -H "Tags: tada,partying_face,rocket" \
             -d "SmartAssistant Anna OS magazasinda ONAYLANDI! Durum: ${{ steps.query.outputs.status }}. Surum: ${{ steps.query.outputs.version }}." \
             https://ntfy.sh/yido-smartassistant-live
@@ -44,9 +44,9 @@ jobs:
         if: steps.query.outputs.status == 'rejected'
         run: |
           curl -s \
-            -H "Title: DIKKAT: SmartAssistant Reddedildi" \
-            -H "Priority: urgent" \
-            -H "Tags: warning,x,rotating_light" \
+            -H "Title: SmartAssistant Reddedildi" \
+            -H "Priority: low" \
+            -H "Tags: warning,x" \
             -d "SmartAssistant inceleme durumu REJECTED olarak degisti! Not: ${{ steps.query.outputs.msg }}. Duzeltmek icin projeyi acin." \
             https://ntfy.sh/yido-smartassistant-live
 
@@ -55,7 +55,7 @@ jobs:
         run: |
           curl -s \
             -H "Title: Nobetci Devrede: SmartAssistant Takipte" \
-            -H "Priority: default" \
+            -H "Priority: low" \
             -H "Tags: white_check_mark,bell" \
             -d "Telefon baglantisi basarili! PC kapaliyken bile GitHub arka planda durumu izliyor. Anlik durum: ${{ steps.query.outputs.status }} (v${{ steps.query.outputs.version }})." \
             https://ntfy.sh/yido-smartassistant-live
