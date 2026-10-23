@@ -20,19 +20,22 @@ jobs:
         run: |
           resp=$(curl -s "https://anna.partners/api/v1/apps/600")
           echo "Full Response: $resp"
-          status=$(echo "$resp" | jq -r '.status // "unknown"')
+          raw_status=$(echo "$resp" | jq -r '.status // "unknown"')
+          status=$(echo "$raw_status" | tr '[:upper:]' '[:lower:]')
           version=$(echo "$resp" | jq -r '.review_candidate_version // .latest_version // "unknown"')
           installs=$(echo "$resp" | jq -r '.install_count // 0')
+          msg=$(echo "$resp" | jq -r '.review_message // "Detay belirtilmedi"')
           echo "status=$status" >> $GITHUB_OUTPUT
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "installs=$installs" >> $GITHUB_OUTPUT
+          echo "msg=$msg" >> $GITHUB_OUTPUT
 
       - name: Alert Phone if Approved or Published
         if: steps.query.outputs.status == 'approved' || steps.query.outputs.status == 'published'
         run: |
           curl -s \
             -H "Title: MUJDE! SmartAssistant Onaylandi!" \
-            -H "Priority: urgent" \
+            -H "Priority: max" \
             -H "Tags: tada,partying_face,rocket" \
             -d "SmartAssistant Anna OS magazasinda ONAYLANDI! Durum: ${{ steps.query.outputs.status }}. Surum: ${{ steps.query.outputs.version }}." \
             https://ntfy.sh/yido-smartassistant-live
@@ -41,10 +44,10 @@ jobs:
         if: steps.query.outputs.status == 'rejected'
         run: |
           curl -s \
-            -H "Title: SmartAssistant Inceleme Bildirimi" \
-            -H "Priority: high" \
-            -H "Tags: warning,x" \
-            -d "SmartAssistant durumu degisti: REJECTED. Lutfen detaylari kontrol edin." \
+            -H "Title: DIKKAT: SmartAssistant Reddedildi" \
+            -H "Priority: urgent" \
+            -H "Tags: warning,x,rotating_light" \
+            -d "SmartAssistant inceleme durumu REJECTED olarak degisti! Not: ${{ steps.query.outputs.msg }}. Duzeltmek icin projeyi acin." \
             https://ntfy.sh/yido-smartassistant-live
 
       - name: Test Ping to Phone
