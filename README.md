@@ -145,7 +145,8 @@ Visit **`http://localhost:5173`**.
 
 ---
 
-## 🔒 Privacy
+<a id="privacy"></a>
+## Privacy
 
 SmartAssistant is built with a strict offline-first, local-storage architecture:
 

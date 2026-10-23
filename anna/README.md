@@ -48,6 +48,7 @@ The workflow was not run from this machine. Check the first run on GitHub.
 
 A qualified run needs a signed-in user, a successful primary function and a non-trivial result. Here that is a weekly review that returns `status: "ok"` (at least 3 of the last 7 days logged). Use the Anna Developer Console for the official numbers. Do not add paid, bot or incentivized usage.
 
+<a id="privacy"></a>
 ## Privacy
 
 SmartAssistant operates with strict user privacy and offline-first principles:
