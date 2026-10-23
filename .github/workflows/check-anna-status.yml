@@ -1,0 +1,58 @@
+name: Check Anna App Status & Alert Phone
+
+on:
+  schedule:
+    # Runs every 20 minutes 24/7 in the cloud
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_ping:
+        description: 'Send test ping to phone right now'
+        type: boolean
+        default: true
+
+jobs:
+  check-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Anna OS App Status
+        id: query
+        run: |
+          resp=$(curl -s "https://anna.partners/api/v1/apps/600")
+          echo "Full Response: $resp"
+          status=$(echo "$resp" | jq -r '.status // "unknown"')
+          version=$(echo "$resp" | jq -r '.review_candidate_version // .latest_version // "unknown"')
+          installs=$(echo "$resp" | jq -r '.install_count // 0')
+          echo "status=$status" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "installs=$installs" >> $GITHUB_OUTPUT
+
+      - name: Alert Phone if Approved or Published
+        if: steps.query.outputs.status == 'approved' || steps.query.outputs.status == 'published'
+        run: |
+          curl -s \
+            -H "Title: 🎉 MÜJDE! SmartAssistant Onaylandı!" \
+            -H "Priority: urgent" \
+            -H "Tags: tada,partying_face,rocket" \
+            -d "SmartAssistant Anna OS mağazasında ONAYLANDI! Durum: ${{ steps.query.outputs.status }}. Sürüm: ${{ steps.query.outputs.version }}." \
+            https://ntfy.sh/yido-smartassistant-live
+
+      - name: Alert Phone if Rejected
+        if: steps.query.outputs.status == 'rejected'
+        run: |
+          curl -s \
+            -H "Title: ⚠️ SmartAssistant İnceleme Bildirimi" \
+            -H "Priority: high" \
+            -H "Tags: warning,x" \
+            -d "SmartAssistant durumu değişti: REJECTED. Lütfen detayları kontrol edin." \
+            https://ntfy.sh/yido-smartassistant-live
+
+      - name: Test Ping to Phone
+        if: github.event.inputs.force_ping == 'true'
+        run: |
+          curl -s \
+            -H "Title: 🔔 Nöbetçi Devrede: SmartAssistant Takipte" \
+            -H "Priority: default" \
+            -H "Tags: white_check_mark,bell" \
+            -d "Telefon bağlantısı başarılı! PC kapalıyken bile GitHub arka planda durumu izliyor. Anlık durum: ${{ steps.query.outputs.status }} (v${{ steps.query.outputs.version }})." \
+            https://ntfy.sh/yido-smartassistant-live
