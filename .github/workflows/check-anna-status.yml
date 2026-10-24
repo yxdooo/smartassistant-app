@@ -18,7 +18,7 @@ jobs:
       - name: Query Anna OS App Status
         id: query
         run: |
-          resp=$(curl -s "https://anna.partners/api/v1/apps/600")
+          resp=$(curl -s -H "Authorization: Bearer ${{ secrets.ANNA_PAT }}" "https://anna.partners/api/v1/apps/600")
           echo "Full Response: $resp"
           raw_status=$(echo "$resp" | jq -r '.status // "unknown"')
           status=$(echo "$raw_status" | tr '[:upper:]' '[:lower:]')
