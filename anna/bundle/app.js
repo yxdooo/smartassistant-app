@@ -34,6 +34,10 @@ const $toast = document.getElementById("toast");
 const $dialog = document.getElementById("dialog-root");
 
 let toastTimer;
+function hideToast() {
+  clearTimeout(toastTimer);
+  $toast.hidden = true;
+}
 function toast(msg, undo) {
   $toast.replaceChildren(h("span", {}, msg));
   if (undo) {
@@ -41,8 +45,7 @@ function toast(msg, undo) {
     $toast.append(h("button", { onclick: () => {
       if (used) return;
       used = true;
-      $toast.hidden = true;
-      clearTimeout(toastTimer);
+      hideToast();
       undo();
     } }, "Undo"));
   }
@@ -200,12 +203,13 @@ function calculateStreak() {
 
 async function commit(msg, undo) {
   const revision = ++stateRevision;
+  hideToast();
   const snapshot = structuredClone(state);
   const save = saveQueue.then(() => store.save(snapshot));
   saveQueue = save.catch(() => {});
   try {
     await save;
-    if (msg) toast(msg, undo);
+    if (msg && revision === stateRevision) toast(msg, undo);
     render();
     return true;
   } catch (e) {

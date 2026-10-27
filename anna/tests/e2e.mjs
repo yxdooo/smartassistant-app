@@ -83,6 +83,20 @@ await waitForRows("water", 6);
 ok(waterTotal(await stored()) === 3000, "Undo removes the last water entry");
 ok(await page.$eval("#toast", (e) => getComputedStyle(e).display === "none"), "Undo hides notification");
 
+await clickText("+500 ml");
+await waitForRows("water", 7);
+const staleUndoHidden = await page.evaluate(() => {
+  const button = [...document.querySelectorAll("button")].find((b) => b.textContent.includes("+250 ml"));
+  button.click();
+  return document.getElementById("toast").hidden;
+});
+ok(staleUndoHidden, "new water tap hides the previous Undo while saving");
+await waitForRows("water", 8);
+await page.waitForSelector("#toast:not([hidden]) button", { visible: true });
+await page.click("#toast button");
+await waitForRows("water", 7);
+ok(waterTotal(await stored()) === 3500, "immediate Undo reverses the new glass only");
+
 const protein = 'input[aria-label="Protein grams"]';
 await page.type(protein, "e-1");
 ok(await page.$eval(protein, (e) => e.value === "1"), "invalid protein characters blocked");
@@ -109,7 +123,7 @@ await clickText("Add Meal");
 await waitForRows("meals", 1);
 await page.waitForFunction(() => document.body.innerText.includes("600 / "));
 const today = await text();
-ok(today.includes("3000 / "), "water total shown correctly");
+ok(today.includes("3500 / "), "water total shown correctly");
 ok(/600 \/ \d+/.test(today), "meal logged");
 await capture("dashboard");
 
@@ -144,11 +158,11 @@ const backupPath = join(temp, "backup.json");
 await writeFile(backupPath, JSON.stringify(backup), "utf8");
 await clickText("Today");
 await clickText("+250 ml");
-await waitForRows("water", 7);
+await waitForRows("water", 8);
 await clickText("Settings");
 await (await page.$('input[type="file"]')).uploadFile(backupPath);
-await waitForRows("water", 6);
-ok(waterTotal(await stored()) === 3000, "backup restore replaces saved entries");
+await waitForRows("water", 7);
+ok(waterTotal(await stored()) === 3500, "backup restore replaces saved entries");
 await clickText("Delete all my data");
 await page.waitForSelector('[role="dialog"]');
 await clickText("Cancel");
