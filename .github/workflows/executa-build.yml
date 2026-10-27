@@ -113,10 +113,10 @@ jobs:
           root = Path(sys.argv[1])
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           entrypoint = root / manifest['runtime']['binary']['entrypoint']['default']
-          assert manifest['version'] == '0.1.5'
+          assert manifest['version'] == '0.1.6'
           assert entrypoint.is_file() and os.access(entrypoint, os.X_OK)
           PY
-          printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":"archive-test"}' | "$stage/bin/$TOOL_ID" | python3 -c "import sys,json; r=json.load(sys.stdin); assert r['id']=='archive-test' and r['result']['version']=='0.1.5'"
+          printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":"archive-test"}' | "$stage/bin/$TOOL_ID" | python3 -c "import sys,json; r=json.load(sys.stdin); assert r['id']=='archive-test' and r['result']['version']=='0.1.6'"
           python3 ../../tests/protocol_check.py "$stage/bin/$TOOL_ID"
       - uses: actions/upload-artifact@v4
         with:

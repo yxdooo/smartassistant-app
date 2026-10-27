@@ -1,7 +1,7 @@
 {
   "name": "tool-dev-smartassistant",
   "display_name": "SmartAssistant",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Daily safe spend, nutrition targets and a weekly money and nutrition review.",
   "tools": [
     {

@@ -38,11 +38,11 @@ On Windows the CLI prints a libuv assertion on exit. It is harmless.
 
 Cloud Agent runs on Linux, so a `linux-x86_64` Executa build must exist before you cut a version.
 
-1. Push a tag: `git tag executa-v0.1.5 && git push origin executa-v0.1.5`.
+1. Push a tag: `git tag executa-v0.1.6 && git push origin executa-v0.1.6`.
 2. `.github/workflows/executa-build.yml` runs the tests, builds all three binaries with PyInstaller, smoke-tests them, and attaches the `.tar.gz` and `.sha256` files to the release.
-3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.5` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
+3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.6` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
 
-The v0.1.5 release workflow completed successfully on GitHub. Check its release assets again before cutting a later app version.
+Check the v0.1.6 release workflow and its release assets before cutting the app version.
 
 ## Tracking real usage
 
@@ -51,12 +51,11 @@ A qualified run needs a signed-in user, a successful primary function and a non-
 <a id="privacy"></a>
 ## Privacy
 
-SmartAssistant operates with strict user privacy and offline-first principles:
+The Anna App saves profile, expense, meal, water, and review records under `smartassistant:v1` in Anna's user-isolated App storage. Anna operates this persistent storage service. The App sends inputs to its bundled Executa for target calculations and weekly reviews; it does not send these records to a separate SmartAssistant server or third-party analytics service.
 
-- **Local Storage:** All financial runway numbers, logged meals, and hydration data are stored exclusively in your local Anna storage (`smartassistant:v1`). No data is sent to external servers or telemetry services.
-- **Data Retention & Auto-Pruning:** Entries older than 120 days are automatically deleted to keep your storage lightweight.
-- **Full Data Wipe:** You can permanently delete all stored profile targets and entries at any time via the "Delete all my data" button in Settings.
-- **Medical Disclaimer:** Calorie, macronutrient, and metabolic burn estimates use the clinical Mifflin-St Jeor formula and are for informational purposes only, not medical advice.
+- **Retention:** Expense, meal, and water entries older than 120 days are removed when the App saves data. The 26 most recent reviews are kept.
+- **Export and deletion:** Settings lets users export a JSON backup, restore it, or permanently delete the App's stored profile and entries. Exported files remain wherever users save them until they delete those files themselves.
+- **Health information:** Calorie, macronutrient, and metabolic estimates are informational and are not medical advice.
 
 ## Before you publish (you do these)
 

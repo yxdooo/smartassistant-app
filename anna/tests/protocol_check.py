@@ -46,8 +46,8 @@ assert [response["id"] for response in responses] == ["first", 2, "ping", "inval
 assert all(response["jsonrpc"] == "2.0" for response in responses)
 for index in (0, 1, 4):
     result = responses[index]["result"]
-    assert result["version"] == "0.1.5"
+    assert result["version"] == "0.1.6"
     assert [tool["name"] for tool in result["tools"]] == ["ping", "plan_targets", "weekly_review"]
-assert responses[2]["result"] == {"success": True, "data": {"pong": True, "version": "0.1.5"}}
+assert responses[2]["result"] == {"success": True, "data": {"pong": True, "version": "0.1.6"}}
 assert responses[3]["result"]["success"] is False
 print("protocol check passed: describe, invoke, failure, recovery, EOF")

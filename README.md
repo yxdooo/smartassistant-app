@@ -148,12 +148,13 @@ Visit **`http://localhost:5173`**.
 <a id="privacy"></a>
 ## Privacy
 
-SmartAssistant is built with a strict offline-first, local-storage architecture:
+**Anna App:** Your profile, expense, meal, water, and review records are saved under `smartassistant:v1` in Anna's user-isolated App storage. Anna operates this persistent storage service; these records are sent to Anna when saved or loaded. The App sends inputs to its bundled Executa to calculate targets and weekly reviews. The Anna App does not send these records to a separate SmartAssistant server or third-party analytics service.
 
-- **Local Storage:** All financial runway numbers, logged meals, and hydration data are stored exclusively in your local storage / Anna storage (`smartassistant:v1`). No data is sent to external servers or telemetry services.
-- **Data Retention & Auto-Pruning:** Entries older than 120 days are automatically deleted to keep your storage lightweight.
-- **Full Data Wipe:** You can permanently delete all stored profile targets and entries at any time via the "Delete all my data" button in Settings.
-- **Medical Disclaimer:** Calorie, macronutrient, and metabolic burn estimates use the clinical Mifflin-St Jeor formula and are for informational purposes only, not medical advice.
+- **Retention:** The App removes expense, meal, and water entries older than 120 days when it saves your data. It keeps the 26 most recent reviews.
+- **Export and deletion:** Settings lets you export a JSON backup, restore it, or permanently delete the App's stored profile and entries. A downloaded backup remains wherever you save it until you delete that file yourself.
+- **Health information:** Calorie, macronutrient, and metabolic estimates are informational and are not medical advice.
+
+The separate React and Node.js application in `frontend/` and `backend/` has its own storage and authentication implementation; this Anna App privacy description applies to the `anna/` build.
 
 ---
 

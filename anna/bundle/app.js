@@ -620,7 +620,7 @@ function settingsView() {
       h("p", { class: "muted" }, `Entries older than ${KEEP_DAYS} days are automatically pruned to keep your Anna storage lightweight.`)),
 
     h("div", { class: "card" }, h("h2", {}, "Backup & Privacy"),
-      h("p", { class: "muted" }, "Your data is stored locally in Anna storage. You can export or restore anytime:"),
+      h("p", { class: "muted" }, "Your data is saved in your Anna account. You can export or restore it anytime:"),
       h("div", { class: "row" },
         h("button", { onclick: exportBackup }, "📥 Export Data (JSON)"),
         h("button", { onclick: () => fileInput.click() }, "📤 Restore from Backup"),
