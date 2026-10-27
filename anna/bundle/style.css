@@ -12,6 +12,7 @@
   --radius: 12px;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body {
   background-color: #14181c !important;
   color-scheme: dark !important;
@@ -107,9 +108,12 @@ ul.actions li { margin-bottom: 8px; }
 .toast {
   position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
   background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 8px;
-  display: flex; gap: 12px; align-items: center; max-width: 92vw;
+  display: flex; gap: 12px; align-items: center; max-width: 92vw; pointer-events: none;
 }
-.toast button { min-height: 32px; padding: 2px 10px; }
+.toast button { min-height: 32px; padding: 2px 10px; pointer-events: auto; }
+.dialog-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, 0.7); }
+.dialog-panel { width: min(100%, 420px); padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); }
+.dialog-panel .row { justify-content: flex-end; margin-top: 16px; }
 .spinner {
   display: inline-block; width: 14px; height: 14px; border-radius: 50%;
   border: 2px solid var(--line); border-top-color: var(--accent);

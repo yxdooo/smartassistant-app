@@ -32,7 +32,9 @@ jobs:
           node-version: "22"
       - name: Python tests
         working-directory: anna
-        run: python -m unittest discover -s tests -v
+        run: |
+          python -m unittest discover -s tests -v
+          python tests/protocol_check.py
       - name: JS parity tests
         working-directory: anna
         run: node --test tests/parity.test.mjs
@@ -69,11 +71,53 @@ jobs:
           review='{"jsonrpc":"2.0","method":"invoke","id":2,"params":{"tool":"plan_targets","arguments":{"weight_kg":70,"height_cm":170,"age":30,"monthly_budget":1500,"today":"2026-03-10"}}}'
           printf '%s\n' "$review" | "./dist/$TOOL_ID" | python3 -c "import sys,json; r=json.load(sys.stdin)['result']; assert r['success'] and r['data']['calories']>0"
       - name: Package
-        working-directory: ${{ env.EXECUTA_DIR }}/dist
+        working-directory: ${{ env.EXECUTA_DIR }}
         run: |
           asset="$TOOL_ID-${{ matrix.name }}.tar.gz"
-          tar czf "$asset" "$TOOL_ID"
-          shasum -a 256 "$asset" > "$asset.sha256"
+          mkdir -p package/bin
+          cp "dist/$TOOL_ID" "package/bin/$TOOL_ID"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          config = json.loads(Path('executa.json').read_text(encoding='utf-8'))
+          entrypoint = 'bin/' + os.environ['TOOL_ID']
+          manifest = {
+              'name': os.environ['TOOL_ID'],
+              'display_name': config['name'],
+              'version': config['version'],
+              'description': config['description'],
+              'runtime': {'binary': {
+                  'entrypoint': {'default': entrypoint},
+                  'permissions': {entrypoint: '0o755'},
+              }},
+          }
+          Path('package/manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+          PY
+          tar -C package -czf "dist/$asset" .
+          shasum -a 256 "dist/$asset" > "dist/$asset.sha256"
+      - name: Test packaged archive
+        working-directory: ${{ env.EXECUTA_DIR }}
+        run: |
+          asset="dist/$TOOL_ID-${{ matrix.name }}.tar.gz"
+          stage="$(mktemp -d)"
+          trap 'rm -rf "$stage"' EXIT
+          tar -xzf "$asset" -C "$stage"
+          python3 - "$stage" <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          entrypoint = root / manifest['runtime']['binary']['entrypoint']['default']
+          assert manifest['version'] == '0.1.5'
+          assert entrypoint.is_file() and os.access(entrypoint, os.X_OK)
+          PY
+          printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":"archive-test"}' | "$stage/bin/$TOOL_ID" | python3 -c "import sys,json; r=json.load(sys.stdin); assert r['id']=='archive-test' and r['result']['version']=='0.1.5'"
+          python3 ../../tests/protocol_check.py "$stage/bin/$TOOL_ID"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TOOL_ID }}-${{ matrix.name }}

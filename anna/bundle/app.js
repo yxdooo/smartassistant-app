@@ -31,14 +31,47 @@ function h(tag, props = {}, ...kids) {
 }
 const $app = document.getElementById("app");
 const $toast = document.getElementById("toast");
+const $dialog = document.getElementById("dialog-root");
 
 let toastTimer;
 function toast(msg, undo) {
   $toast.replaceChildren(h("span", {}, msg));
-  if (undo) $toast.append(h("button", { onclick: () => { undo(); $toast.hidden = true; } }, "Undo"));
+  if (undo) {
+    let used = false;
+    $toast.append(h("button", { onclick: () => {
+      if (used) return;
+      used = true;
+      $toast.hidden = true;
+      clearTimeout(toastTimer);
+      undo();
+    } }, "Undo"));
+  }
   $toast.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => ($toast.hidden = true), 5000);
+}
+
+function confirmAction(title, message, action, confirmLabel = "Confirm") {
+  const error = h("p", { class: "error", role: "alert" });
+  const cancel = h("button", { onclick: () => { $dialog.hidden = true; $dialog.replaceChildren(); } }, "Cancel");
+  const confirmButton = h("button", { class: "primary", onclick: async () => {
+    cancel.disabled = confirmButton.disabled = true;
+    error.textContent = "";
+    try {
+      await action();
+      $dialog.hidden = true;
+      $dialog.replaceChildren();
+    } catch (e) {
+      error.textContent = e.message || "The action could not be completed.";
+      cancel.disabled = confirmButton.disabled = false;
+    }
+  } }, confirmLabel);
+  $dialog.replaceChildren(h("div", { class: "dialog-backdrop" },
+    h("div", { class: "dialog-panel", role: "dialog", "aria-modal": "true", "aria-label": title },
+      h("h2", {}, title), h("p", {}, message), error,
+      h("div", { class: "row" }, cancel, confirmButton))));
+  $dialog.hidden = false;
+  cancel.focus();
 }
 
 // ---------- host connection ----------
@@ -121,6 +154,8 @@ async function callTool(method, args) {
 let state = normalize(null);
 let view = new URLSearchParams(location.search).get("view") || "today";
 let reviewState = { status: "idle" };
+let saveQueue = Promise.resolve();
+let stateRevision = 0;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const sumWhere = (rows, key, day) => rows.filter((r) => r.date === day).reduce((a, r) => a + (+r[key] || 0), 0);
@@ -160,13 +195,23 @@ function calculateStreak() {
 }
 
 async function commit(msg, undo) {
+  const revision = ++stateRevision;
+  const snapshot = structuredClone(state);
+  const save = saveQueue.then(() => store.save(snapshot));
+  saveQueue = save.catch(() => {});
   try {
-    await store.save(state);
+    await save;
     if (msg) toast(msg, undo);
+    render();
+    return true;
   } catch (e) {
+    if (revision === stateRevision) {
+      try { state = await store.load(); } catch { /* retain the current view */ }
+    }
     toast("Could not save: " + (e.message || "storage error"));
+    render();
+    return false;
   }
-  render();
 }
 
 function addRow(kind, row, label) {
@@ -218,7 +263,7 @@ function onboardingView() {
             inputs: { weight_kg: +f.weight, height_cm: +f.height, age: +f.age, sex: f.sex, activity: f.activity, goal: f.goal },
           };
           state.plan = data;
-          await commit();
+          if (!await commit()) throw new Error("Could not save your numbers.");
         } catch (ex) {
           err.textContent = ex.message;
           btn.disabled = false;
@@ -283,12 +328,11 @@ function fastingWidget() {
           h("span", { class: "badge " + (isComplete ? "badge-success" : "badge-active") }, isComplete ? "Goal Met" : "Active")),
         h("p", { class: "muted" }, `Started ${new Date(f.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Target: ${targetHours} hours`)),
       h("button", {
-        onclick: () => {
-          if (confirm("End fasting session?")) {
+        onclick: () => confirmAction("End fasting session?", "Your current fasting timer will stop.",
+          async () => {
             state.fasting = null;
-            commit("Fast ended.");
-          }
-        }
+            if (!await commit("Fast ended.")) throw new Error("Could not save the fasting change.");
+          }, "End fast")
       }, isComplete ? "Break Fast" : "Stop Fast")),
     h("div", { class: "fasting-timer" },
       h("span", { class: "timer-digits" }, `${hours}h ${minutes}m`),
@@ -331,7 +375,26 @@ function todayView() {
   };
 
   const kcal = h("input", { type: "number", min: 0, inputmode: "numeric", "aria-label": "Calories", placeholder: "kcal" });
-  const prot = h("input", { type: "number", min: 0, inputmode: "numeric", "aria-label": "Protein grams", placeholder: "protein g" });
+  const proteinEdit = /^\d*(?:\.\d*)?$/;
+  const proteinFinal = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
+  let lastProteinValue = "";
+  const prot = h("input", {
+    type: "text", inputmode: "decimal", "aria-label": "Protein grams", placeholder: "protein g",
+    onbeforeinput: (e) => {
+      if (e.data == null) return;
+      const next = prot.value.slice(0, prot.selectionStart) + e.data + prot.value.slice(prot.selectionEnd);
+      if (!proteinEdit.test(next)) e.preventDefault();
+    },
+    onpaste: (e) => {
+      const inserted = e.clipboardData?.getData("text") || "";
+      const next = prot.value.slice(0, prot.selectionStart) + inserted + prot.value.slice(prot.selectionEnd);
+      if (!proteinEdit.test(next)) e.preventDefault();
+    },
+    oninput: () => {
+      if (proteinEdit.test(prot.value)) lastProteinValue = prot.value;
+      else prot.value = lastProteinValue;
+    },
+  });
   const lastMeal = state.meals[state.meals.length - 1];
 
   return h("section", {},
@@ -370,7 +433,7 @@ function todayView() {
         todayWater.length > 0 && h("button", { class: "del-btn", onclick: () => {
           const last = todayWater[todayWater.length - 1];
           removeRow("water", last.id, "Removed last water entry.");
-        } }, "Undo last glass"))),
+        } }, "Undo last water"))),
 
     // Expense Card
     h("div", { class: "card" },
@@ -392,7 +455,11 @@ function todayView() {
         h("button", { class: "primary", onclick: () => {
           const k = parseFloat(kcal.value);
           if (!(k > 0)) { toast("Enter the calories first."); kcal.focus(); return; }
-          addRow("meals", { kcal: k, protein: Math.max(0, parseFloat(prot.value) || 0) }, `Added ${Math.round(k)} kcal`);
+          const proteinText = prot.value.trim();
+          if (proteinText && (!proteinFinal.test(proteinText) || !Number.isFinite(Number(proteinText)))) {
+            toast("Enter a valid protein amount."); prot.focus(); return;
+          }
+          addRow("meals", { kcal: k, protein: proteinText ? Number(proteinText) : 0 }, `Added ${Math.round(k)} kcal`);
           kcal.value = "";
           prot.value = "";
         } }, "Add Meal")),
@@ -466,7 +533,7 @@ async function runReview() {
         nutrition: data.nutrition,
         actions: data.actions
       });
-      await store.save(state);
+      if (!await commit()) throw new Error("Could not save the review.");
     }
   } catch (e) {
     reviewState = { status: "error", message: "The review could not run: " + (e.message || e) };
@@ -520,9 +587,9 @@ function importBackup(e) {
     try {
       const parsed = JSON.parse(evt.target.result);
       state = normalize(parsed);
-      await commit("Backup restored successfully!");
+      if (!await commit("Backup restored successfully!")) throw new Error("Could not save the backup.");
     } catch {
-      toast("Invalid backup file.");
+      toast("The backup could not be restored.");
     }
   };
   reader.readAsText(file);
@@ -552,10 +619,16 @@ function settingsView() {
         fileInput)),
 
     h("div", { class: "card" }, h("h2", {}, "Reset"),
-      h("button", { onclick: async () => {
-        if (!confirm("Delete all entries and targets? This cannot be undone.")) return;
-        state = normalize(null); reviewState = { status: "idle" }; view = "today"; await commit("All data deleted.");
-      } }, "Delete all my data")));
+       h("button", { onclick: () => confirmAction("Delete all my data?",
+         "This permanently deletes your targets and entries from Anna storage. This cannot be undone.", async () => {
+           await saveQueue;
+           const empty = normalize(null);
+           await store.save(empty);
+           stateRevision++;
+           state = empty; reviewState = { status: "idle" }; view = "today";
+           render();
+           toast("All data deleted.");
+         }, "Delete data") }, "Delete all my data")));
 }
 
 function render() {

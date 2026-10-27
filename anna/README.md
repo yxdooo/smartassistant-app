@@ -40,7 +40,7 @@ Cloud Agent runs on Linux, so a `linux-x86_64` Executa build must exist before y
 
 1. Push a tag: `git tag executa-v0.1.0 && git push origin executa-v0.1.0`.
 2. `.github/workflows/executa-build.yml` runs the tests, builds all three binaries with PyInstaller, smoke-tests them, and attaches the `.tar.gz` and `.sha256` files to the release.
-3. `executas/smartassistant/executa.json` already points at `releases/download/executa-v0.1.0/...`. If you change the version, change the tag and URLs together.
+3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.5` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
 
 The workflow was not run from this machine. Check the first run on GitHub.
 
@@ -60,8 +60,8 @@ SmartAssistant operates with strict user privacy and offline-first principles:
 
 ## Before you publish (you do these)
 
-- [ ] Run `anna-app validate --strict` and confirm `executa-v0.1.0` assets exist on GitHub.
-- [ ] Add 3 to 5 screenshots: setup result, Today, weekly review result, empty review state.
+- [ ] Run `anna-app validate --strict` and confirm the current Executa release assets exist on GitHub.
+- [ ] Check that the English screenshots shown in Anna match the current app.
 - [ ] Review the description in `app.json` and the categories in the Developer Console.
 - [ ] Join the Builder Discord and post a short demo.
 - [ ] Submit for review, then publish.
