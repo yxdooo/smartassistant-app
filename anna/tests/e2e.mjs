@@ -102,6 +102,8 @@ await page.$eval(protein, (e) => { e.value = "1e3"; });
 await clickText("Add Meal");
 ok((await stored()).meals.length === 0, "invalid protein rejected on save");
 await page.$eval(protein, (e) => { e.value = ""; e.dispatchEvent(new Event("input", { bubbles: true })); });
+await clickText("Add Meal");
+ok((await stored()).meals.length === 0, "empty protein rejected instead of recording zero");
 await page.type(protein, "40");
 await clickText("Add Meal");
 await waitForRows("meals", 1);

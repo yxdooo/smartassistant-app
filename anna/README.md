@@ -16,7 +16,7 @@ A weekly money and nutrition review, packaged as an Anna App (`@yido/smartassist
 ## How it works
 
 - **Data layer.** `app.js` saves one JSON document under the key `smartassistant:v1`. Inside Anna it uses `anna.storage`. Outside Anna it uses `localStorage`. Entries older than 120 days are pruned because storage values are capped at 256 KB.
-- **Calculations.** The app calls the bundled Executa through `anna.tools.invoke`. If the Executa is unreachable, `bundle/engine.js` runs the same rules locally. `tests/parity.json` is generated from the Python code and checked against the JS code, so the two cannot drift silently.
+- **Calculations.** Inside Anna, the app requires the bundled Executa through `anna.tools.invoke` and shows an error if it is unavailable. The standalone browser preview uses `bundle/engine.js`. `tests/parity.json` is generated from the Python code and checked against the JS code, so the two cannot drift silently.
 - **LLM.** The review does not need a model. If the host allows `llm.complete`, a "Short plain-text note" button rewrites the review in three sentences using only its numbers.
 - **Run counter.** Each completed review adds a small record (date, days logged) to the user's own storage. Nothing is sent anywhere. It is shown in Settings so you can confirm a run produced a real result.
 
@@ -38,11 +38,11 @@ On Windows the CLI prints a libuv assertion on exit. It is harmless.
 
 Cloud Agent runs on Linux, so a `linux-x86_64` Executa build must exist before you cut a version.
 
-1. Push a tag: `git tag executa-v0.1.0 && git push origin executa-v0.1.0`.
+1. Push a tag: `git tag executa-v0.1.5 && git push origin executa-v0.1.5`.
 2. `.github/workflows/executa-build.yml` runs the tests, builds all three binaries with PyInstaller, smoke-tests them, and attaches the `.tar.gz` and `.sha256` files to the release.
 3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.5` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
 
-The workflow was not run from this machine. Check the first run on GitHub.
+The v0.1.5 release workflow completed successfully on GitHub. Check its release assets again before cutting a later app version.
 
 ## Tracking real usage
 

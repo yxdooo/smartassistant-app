@@ -1,7 +1,7 @@
 {
   "slug": "smartassistant",
   "name": "SmartAssistant",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "tagline": "A weekly review of your spending and eating, with specific next steps.",
   "description": "SmartAssistant compares what you spent with your monthly budget and what you ate and drank with your own targets, then tells you what to change next week.\n\n**What it does**\n\n- Setup takes about a minute: enter a budget, fixed costs, weight, height, age and goal. You get a safe daily spend and daily calorie, protein and water targets.\n- Log an expense, a meal or a glass of water in one or two taps.\n- Run the weekly review. It reports spending against your weekly allowance, your biggest category, average calories and protein against target, and days you met your water goal. It lists the specific changes that follow from those numbers.\n- If fewer than 3 of the last 7 days have entries, it says so instead of guessing.\n\n**Your data**\n\nEntries are saved in your Anna storage. Entries older than 120 days are deleted automatically, and Settings has a button that deletes everything. Calorie targets use the Mifflin-St Jeor formula and are estimates, not medical advice.",
   "category": "productivity",

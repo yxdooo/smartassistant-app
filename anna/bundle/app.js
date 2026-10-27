@@ -460,10 +460,10 @@ function todayView() {
           const k = parseFloat(kcal.value);
           if (!(k > 0)) { toast("Enter the calories first."); kcal.focus(); return; }
           const proteinText = prot.value.trim();
-          if (proteinText && (!proteinFinal.test(proteinText) || !Number.isFinite(Number(proteinText)))) {
+          if (!proteinFinal.test(proteinText) || !Number.isFinite(Number(proteinText))) {
             toast("Enter a valid protein amount."); prot.focus(); return;
           }
-          addRow("meals", { kcal: k, protein: proteinText ? Number(proteinText) : 0 }, `Added ${Math.round(k)} kcal`);
+          addRow("meals", { kcal: k, protein: Number(proteinText) }, `Added ${Math.round(k)} kcal`);
           kcal.value = "";
           prot.value = "";
         } }, "Add Meal")),
