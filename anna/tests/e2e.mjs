@@ -170,6 +170,10 @@ ok(true, "delete survives reload and returns to onboarding");
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
 ok(!overflow, "no horizontal overflow at 390px");
 
+await page.goto(url + "?wid=test-window");
+await page.waitForFunction(() => document.querySelector("#app")?.textContent.includes("Could not connect to Anna"));
+ok(!(await page.$("form")), "host connection failure does not silently use local storage");
+
 await browser.close();
 server.close();
 await rm(temp, { recursive: true, force: true });

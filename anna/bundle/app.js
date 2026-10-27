@@ -85,8 +85,11 @@ async function connectHost() {
     ]);
     window.anna = anna;
     try { await anna.window?.ready?.(); } catch { /* optional */ }
-  } catch {
-    anna = null; // standalone preview
+  } catch (e) {
+    anna = null;
+    if (new URLSearchParams(location.search).has("wid")) {
+      throw new Error("Could not connect to Anna. Reopen the app and check your connection.");
+    }
   }
 }
 
@@ -132,10 +135,11 @@ function prune(s) {
   s.reviews = s.reviews.slice(-26);
 }
 
-// ---------- tools: Executa first, local engine as fallback ----------
+// ---------- tools: require Executa inside Anna; local engine for standalone preview ----------
 async function callTool(method, args) {
   if (anna) {
     const toolId = (window.__ANNA_TOOL_IDS__ || {})[HANDLE];
+    if (!toolId) throw new Error("SmartAssistant's tool is not configured. Please reinstall the app.");
     try {
       const res = await anna.tools.invoke({ tool_id: toolId, method, args, timeoutMs: 20000 });
       let out = res && "result" in res ? res.result : res;
@@ -144,7 +148,7 @@ async function callTool(method, args) {
       return { data: out, via: "executa" };
     } catch (e) {
       if (/plan_targets|weekly_review|must be|must be at/.test(String(e.message))) throw e;
-      // Executa unreachable: fall through to the same rules in the bundle.
+      throw new Error("SmartAssistant's tool is unavailable. Check that its Executa is running on your Anna Agent, then try again.");
     }
   }
   return { data: TOOLS[method](args), via: "local" };
@@ -649,8 +653,8 @@ function render() {
 }
 
 async function main() {
-  await connectHost();
   try {
+    await connectHost();
     state = await store.load();
     render();
     // Live ticking timer for fasting
