@@ -243,6 +243,23 @@ function removeRow(kind, id, label) {
 
 // ---------- views ----------
 function field(label, attrs) {
+  if (attrs.type === "number") {
+    const isDecimal = attrs.step === "any";
+    const pattern = isDecimal ? /[^0-9.]/ : /[^0-9]/;
+    const prevBefore = attrs.onbeforeinput;
+    attrs.onbeforeinput = (e) => {
+      if (prevBefore) prevBefore(e);
+      if (e.defaultPrevented || !e.data) return;
+      if (pattern.test(e.data)) e.preventDefault();
+    };
+    const prevPaste = attrs.onpaste;
+    attrs.onpaste = (e) => {
+      if (prevPaste) prevPaste(e);
+      if (e.defaultPrevented) return;
+      const text = e.clipboardData?.getData("text") || "";
+      if (pattern.test(text)) e.preventDefault();
+    };
+  }
   return h("label", {}, label, h("input", attrs));
 }
 
@@ -374,7 +391,16 @@ function todayView() {
   const todayMeals = state.meals.filter((r) => r.date === day);
   const todayWater = state.water.filter((r) => r.date === day);
 
-  const amount = h("input", { id: "amt", type: "number", min: 0, step: "any", inputmode: "decimal", "aria-label": "Expense amount", placeholder: "Amount" });
+  const amount = h("input", {
+    id: "amt", type: "number", min: 0, step: "any", inputmode: "decimal", "aria-label": "Expense amount", placeholder: "Amount",
+    onbeforeinput: (e) => {
+      if (e.data && /[^0-9.]/.test(e.data)) e.preventDefault();
+    },
+    onpaste: (e) => {
+      const text = e.clipboardData?.getData("text") || "";
+      if (/[^0-9.]/.test(text)) e.preventDefault();
+    },
+  });
   const addExpense = (cat) => {
     const v = parseFloat(amount.value);
     if (!(v > 0)) { toast("Enter an amount first."); amount.focus(); return; }
@@ -382,7 +408,16 @@ function todayView() {
     amount.value = "";
   };
 
-  const kcal = h("input", { type: "number", min: 0, inputmode: "numeric", "aria-label": "Calories", placeholder: "kcal" });
+  const kcal = h("input", {
+    type: "number", min: 0, inputmode: "numeric", "aria-label": "Calories", placeholder: "kcal",
+    onbeforeinput: (e) => {
+      if (e.data && /[^0-9]/.test(e.data)) e.preventDefault();
+    },
+    onpaste: (e) => {
+      const text = e.clipboardData?.getData("text") || "";
+      if (/[^0-9]/.test(text)) e.preventDefault();
+    },
+  });
   const proteinEdit = /^\d*(?:\.\d*)?$/;
   const proteinFinal = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
   let lastProteinValue = "";
@@ -594,13 +629,41 @@ function importBackup(e) {
   reader.onload = async (evt) => {
     try {
       const parsed = JSON.parse(evt.target.result);
+      validateBackup(parsed);
       state = normalize(parsed);
+      reviewState = { status: "idle" };
       if (!await commit("Backup restored successfully!")) throw new Error("Could not save the backup.");
     } catch {
       toast("The backup could not be restored.");
     }
   };
   reader.readAsText(file);
+}
+
+function validateBackup(s) {
+  const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+  const finite = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0;
+  const fail = () => { throw new Error("Invalid SmartAssistant backup."); };
+  if (!object(s) || s.v !== 1) fail();
+  for (const [kind, fields] of Object.entries({ expenses: ["amount"], meals: ["kcal", "protein"], water: ["ml"] })) {
+    if (!Array.isArray(s[kind])) fail();
+    const ids = new Set();
+    for (const row of s[kind]) {
+      if (!object(row) || typeof row.id !== "string" || !row.id || ids.has(row.id)
+          || typeof row.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(row.date)
+          || !Number.isFinite(Date.parse(row.date)) || new Date(row.date).toISOString().slice(0, 10) !== row.date
+          || fields.some((key) => !finite(row[key]))) fail();
+      if (kind === "expenses" && typeof row.category !== "string") fail();
+      ids.add(row.id);
+    }
+  }
+  if (!Array.isArray(s.reviews) || s.reviews.some((r) => !object(r))) fail();
+  if (s.profile !== null) {
+    if (!object(s.profile) || !CURRENCIES.includes(s.profile.currency)
+        || ["monthly_budget", "fixed_costs", "calories", "protein_g", "water_ml"].some((k) => !finite(s.profile[k]))) fail();
+    TOOLS.plan_targets({ ...s.profile.inputs, monthly_budget: s.profile.monthly_budget, fixed_costs: s.profile.fixed_costs });
+  }
+  if (s.plan !== null && !object(s.plan)) fail();
 }
 
 function settingsView() {
