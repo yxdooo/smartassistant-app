@@ -80,20 +80,39 @@ function confirmAction(title, message, action, confirmLabel = "Confirm") {
 // ---------- host connection ----------
 let anna = null;
 async function connectHost() {
-  try {
-    const mod = await import("/static/anna-apps/_sdk/latest/index.js");
-    anna = await Promise.race([
-      mod.AnnaAppRuntime.connect(),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("host handshake timed out")), 3000)),
-    ]);
-    window.anna = anna;
-    try { await anna.window?.ready?.(); } catch { /* optional */ }
-  } catch (e) {
-    anna = null;
-    if (new URLSearchParams(location.search).has("wid")) {
-      throw new Error("Could not connect to Anna. Reopen the app and check your connection.");
+  const hasWid = new URLSearchParams(location.search).has("wid");
+  if (!hasWid) {
+    try {
+      const mod = await import("/static/anna-apps/_sdk/latest/index.js");
+      anna = await Promise.race([
+        mod.AnnaAppRuntime.connect(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("handshake timed out")), 2000)),
+      ]);
+      window.anna = anna;
+      try { await anna.window?.ready?.(); } catch {}
+    } catch {
+      anna = null;
+    }
+    return;
+  }
+
+  // Inside Anna host (has wid): give ample time for container/IPC cold start and retry once
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const mod = await import("/static/anna-apps/_sdk/latest/index.js");
+      anna = await Promise.race([
+        mod.AnnaAppRuntime.connect(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("host handshake timed out")), 8000)),
+      ]);
+      window.anna = anna;
+      try { await anna.window?.ready?.(); } catch {}
+      return;
+    } catch (e) {
+      if (attempt === 1) await new Promise((r) => setTimeout(r, 600));
     }
   }
+  anna = null;
+  throw new Error("Could not connect to Anna. Reopen the app and check your connection.");
 }
 
 // ---------- data layer: one interface, two backends ----------
