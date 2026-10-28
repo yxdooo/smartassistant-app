@@ -80,37 +80,62 @@ function confirmAction(title, message, action, confirmLabel = "Confirm") {
 // ---------- host connection ----------
 let anna = null;
 async function connectHost() {
-  const hasWid = new URLSearchParams(location.search).has("wid");
-  if (!hasWid) {
+  const params = new URLSearchParams(location.search);
+  const hasWid = params.has("wid");
+
+  let mod;
+  try {
+    mod = await import("./anna-app-runtime.js");
+  } catch {
     try {
-      const mod = await import("/static/anna-apps/_sdk/latest/index.js");
-      anna = await Promise.race([
-        mod.AnnaAppRuntime.connect(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error("handshake timed out")), 2000)),
-      ]);
-      window.anna = anna;
-      try { await anna.window?.ready?.(); } catch {}
+      mod = await import("/static/anna-apps/_sdk/latest/index.js");
     } catch {
+      // offline / standalone
+    }
+  }
+
+  const AnnaRuntime = mod?.AnnaAppRuntime || mod?.default;
+
+  if (!hasWid) {
+    if (AnnaRuntime) {
+      try {
+        anna = await Promise.race([
+          AnnaRuntime.connect(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error("handshake timed out")), 2000)),
+        ]);
+        window.anna = anna;
+        try { await anna.window?.ready?.(); } catch {}
+      } catch {
+        anna = null;
+      }
+    } else {
       anna = null;
     }
     return;
   }
 
-  // Inside Anna host (has wid): give ample time for container/IPC cold start and retry once
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const mod = await import("/static/anna-apps/_sdk/latest/index.js");
-      anna = await Promise.race([
-        mod.AnnaAppRuntime.connect(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error("host handshake timed out")), 8000)),
-      ]);
-      window.anna = anna;
-      try { await anna.window?.ready?.(); } catch {}
-      return;
-    } catch (e) {
-      if (attempt === 1) await new Promise((r) => setTimeout(r, 600));
+  // Inside Anna host (has wid):
+  if (sessionStorage.getItem("smartassistant:offline") === "1") {
+    anna = null;
+    return;
+  }
+
+  if (AnnaRuntime) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        anna = await Promise.race([
+          AnnaRuntime.connect(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error("host handshake timed out")), 10000)),
+        ]);
+        window.anna = anna;
+        try { await anna.window?.ready?.(); } catch {}
+        return;
+      } catch (e) {
+        if (attempt === 1) await new Promise((r) => setTimeout(r, 800));
+      }
     }
   }
+
   anna = null;
   throw new Error("Could not connect to Anna. Reopen the app and check your connection.");
 }
@@ -749,8 +774,16 @@ async function main() {
     }, 60000);
   } catch (e) {
     $app.setAttribute("aria-busy", "false");
-    $app.replaceChildren(h("p", { class: "error", role: "alert" }, "Could not load your data: " + (e.message || e)),
-      h("button", { class: "primary", onclick: () => location.reload() }, "Try again"));
+    $app.replaceChildren(
+      h("p", { class: "error", role: "alert" }, "Could not load your data: " + (e.message || e)),
+      h("div", { class: "row", style: "margin-top: 16px; gap: 10px;" },
+        h("button", { class: "primary", onclick: () => location.reload() }, "Try again"),
+        h("button", { onclick: () => {
+          sessionStorage.setItem("smartassistant:offline", "1");
+          location.reload();
+        } }, "Use in Offline Mode")
+      )
+    );
   }
 }
 main();
