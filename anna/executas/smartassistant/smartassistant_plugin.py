@@ -1,7 +1,7 @@
 """SmartAssistant Executa: deterministic money and nutrition calculations.
 
 Speaks JSON-RPC 2.0 over stdio. Uses only the standard library so it can be
-frozen into a single binary for linux-x86_64, darwin-arm64 and darwin-x86_64.
+frozen into a single binary for linux-x86_64 for Anna Cloud Agent.
 
 Tools:
     ping            smoke test
@@ -20,7 +20,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from calendar import monthrange
 
-VERSION = "0.1.6"
+VERSION = "0.1.7"
 MIN_LOGGED_DAYS = 3
 
 ACTIVITY = {

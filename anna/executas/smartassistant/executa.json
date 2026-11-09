@@ -1,14 +1,12 @@
 {
   "slug": "smartassistant",
   "name": "SmartAssistant",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "executa_type": "tool",
   "description": "Plans daily targets and reviews a week of spending, calories, protein and water. Standard library only.",
-
   "tool_id": "tool-dev-smartassistant",
   "type": "python",
   "enabled": true,
-
   "distribution": {
     "active": "binary",
     "profiles": {
@@ -21,18 +19,8 @@
         "executable_name": "tool-dev-smartassistant",
         "supports_protocol": true,
         "binary_urls": {
-          "darwin-arm64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.6/tool-dev-smartassistant-darwin-arm64.tar.gz",
-            "entrypoint": "bin/tool-dev-smartassistant",
-            "format": "tar.gz"
-          },
-          "darwin-x86_64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.6/tool-dev-smartassistant-darwin-x86_64.tar.gz",
-            "entrypoint": "bin/tool-dev-smartassistant",
-            "format": "tar.gz"
-          },
           "linux-x86_64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.6/tool-dev-smartassistant-linux-x86_64.tar.gz",
+            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.7/tool-dev-smartassistant-linux-x86_64.tar.gz",
             "entrypoint": "bin/tool-dev-smartassistant",
             "format": "tar.gz"
           }
@@ -40,6 +28,5 @@
       }
     }
   },
-
-  "_comment": "Handle: smartassistant (app.json bundled_executas). Set distribution.active to \"local\" to run from source with anna-app dev. Keep \"binary\" for publishing: Cloud Agent runs on Linux, so linux-x86_64 must exist before `anna-app apps cut`. The workflow in .github/workflows/executa-build.yml builds all three assets for the tag executa-v<version>."
+  "_comment": "Linux-only distribution for Anna Cloud Agent. Build and test the Linux release archive before cutting an app version."
 }

@@ -11,7 +11,7 @@ A weekly money and nutrition review, packaged as an Anna App (`@yido/smartassist
 | `bundle/` | Static app: `index.html`, `app.js`, `engine.js`, `style.css`, `anna-tool-ids.js` |
 | `executas/smartassistant/` | Python Executa (standard library only) with `plan_targets` and `weekly_review` |
 | `tests/` | Python unit tests, JS parity tests and a browser smoke test |
-| `../.github/workflows/executa-build.yml` | Builds the Executa for linux-x86_64, darwin-arm64 and darwin-x86_64 |
+| `../.github/workflows/executa-build.yml` | Builds the Executa for linux-x86_64 for Anna Cloud Agent |
 
 ## How it works
 
@@ -38,11 +38,11 @@ On Windows the CLI prints a libuv assertion on exit. It is harmless.
 
 Cloud Agent runs on Linux, so a `linux-x86_64` Executa build must exist before you cut a version.
 
-1. Push a tag: `git tag executa-v0.1.6 && git push origin executa-v0.1.6`.
+1. Push a tag: `git tag executa-v0.1.7 && git push origin executa-v0.1.7`.
 2. `.github/workflows/executa-build.yml` runs the tests, builds all three binaries with PyInstaller, smoke-tests them, and attaches the `.tar.gz` and `.sha256` files to the release.
-3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.6` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
+3. `executas/smartassistant/executa.json` points at the matching `executa-v0.1.7` release. The archive contains `manifest.json` and a `bin/` entrypoint. Change the tag, URLs, and Executa versions together for a future release.
 
-Check the v0.1.6 release workflow and its release assets before cutting the app version.
+Check the v0.1.7 release workflow and its release assets before cutting the app version.
 
 ## Tracking real usage
 
