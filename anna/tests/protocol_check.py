@@ -24,6 +24,7 @@ requests = [
     request("first", "describe"),
     request(2, "describe"),
     request("ping", "invoke", {"tool": "ping", "arguments": {}}),
+    request("quick", "invoke", {"tool": "parse_quick_log", "arguments": {"text": "$12 lunch 500ml"}}),
     request("invalid", "invoke", {"tool": "plan_targets", "arguments": {}}),
     request("recovered", "describe"),
 ]
@@ -42,12 +43,14 @@ except subprocess.TimeoutExpired:
 assert process.returncode == 0, f"Executa exited {process.returncode}: {stderr}"
 responses = [json.loads(line) for line in stdout.splitlines()]
 assert len(responses) == len(requests), f"Unexpected stdout: {stdout!r}"
-assert [response["id"] for response in responses] == ["first", 2, "ping", "invalid", "recovered"]
+assert [response["id"] for response in responses] == ["first", 2, "ping", "quick", "invalid", "recovered"]
 assert all(response["jsonrpc"] == "2.0" for response in responses)
-for index in (0, 1, 4):
+for index in (0, 1, 5):
     result = responses[index]["result"]
-    assert result["version"] == "0.1.7"
-    assert [tool["name"] for tool in result["tools"]] == ["ping", "plan_targets", "weekly_review"]
-assert responses[2]["result"] == {"success": True, "data": {"pong": True, "version": "0.1.7"}}
-assert responses[3]["result"]["success"] is False
-print("protocol check passed: describe, invoke, failure, recovery, EOF")
+    assert result["version"] == "0.1.8"
+    assert [tool["name"] for tool in result["tools"]] == ["ping", "plan_targets", "weekly_review", "parse_quick_log"]
+assert responses[2]["result"] == {"success": True, "data": {"pong": True, "version": "0.1.8"}}
+assert responses[3]["result"]["success"] is True
+assert responses[3]["result"]["data"]["water"] == [{"ml": 500}]
+assert responses[4]["result"]["success"] is False
+print("protocol check passed: describe, invoke, parse_quick_log, failure, recovery, EOF")

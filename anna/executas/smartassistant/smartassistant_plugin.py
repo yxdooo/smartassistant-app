@@ -1,4 +1,4 @@
-"""SmartAssistant Executa: deterministic money and nutrition calculations.
+"""SmartAssistant Executa: deterministic money, nutrition and quick-log calculations.
 
 Speaks JSON-RPC 2.0 over stdio. Uses only the standard library so it can be
 frozen into a single binary for linux-x86_64 for Anna Cloud Agent.
@@ -6,7 +6,8 @@ frozen into a single binary for linux-x86_64 for Anna Cloud Agent.
 Tools:
     ping            smoke test
     plan_targets    daily safe spend, calorie, macro and water targets
-    weekly_review   7-day review of spending and nutrition with actions
+    weekly_review   7-day review of spending and nutrition with daily_series and actions
+    parse_quick_log bilingual (EN/TR) deterministic natural-language quick-log parser
 
 The same rules are implemented in anna/bundle/engine.js so the app also works
 when the Executa is not reachable. tests/parity.json keeps both in sync.
@@ -15,12 +16,13 @@ when the Executa is not reachable. tests/parity.json keeps both in sync.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import date, timedelta
 from calendar import monthrange
 
-VERSION = "0.1.7"
+VERSION = "0.1.8"
 MIN_LOGGED_DAYS = 3
 
 ACTIVITY = {
@@ -32,6 +34,111 @@ ACTIVITY = {
 PROTEIN_PER_KG = {"lose": 2.0, "maintain": 1.6, "gain": 1.8}
 KCAL_ADJUST = {"lose": -500, "maintain": 0, "gain": 300}
 KCAL_FLOOR = {"female": 1200, "male": 1500}
+
+_FOLD_MAP = str.maketrans({
+    "İ": "i", "I": "i", "ı": "i",
+    "Ş": "s", "ş": "s",
+    "Ğ": "g", "ğ": "g",
+    "Ü": "u", "ü": "u",
+    "Ö": "o", "ö": "o",
+    "Ç": "c", "ç": "c",
+    "\u0307": "",
+})
+
+_FOOD_LEXICON = [
+    ("chicken bowl", "Chicken Bowl", 620, 46),
+    ("tavuk pilav", "Chicken & Rice", 620, 46),
+    ("protein shake", "Protein Shake", 180, 30),
+    ("whey", "Protein Shake", 160, 28),
+    ("caesar salad", "Caesar Salad", 420, 34),
+    ("tavuk salata", "Chicken Salad", 420, 34),
+    ("iced latte", "Iced Latte", 140, 6),
+    ("cappuccino", "Cappuccino", 120, 6),
+    ("latte", "Latte", 140, 6),
+    ("americano", "Americano", 15, 0),
+    ("espresso", "Espresso", 10, 0),
+    ("coffee", "Coffee", 30, 1),
+    ("kahve", "Coffee", 30, 1),
+    ("hamburger", "Burger", 680, 34),
+    ("burger", "Burger", 680, 34),
+    ("pizza", "Pizza", 720, 28),
+    ("shawarma", "Wrap / Doner", 640, 38),
+    ("doner", "Doner", 640, 38),
+    ("durum", "Wrap / Durum", 620, 36),
+    ("kebab", "Kebab", 660, 42),
+    ("avocado toast", "Avocado Toast", 360, 12),
+    ("sandwich", "Sandwich", 440, 22),
+    ("tost", "Toast", 390, 18),
+    ("wrap", "Wrap", 480, 26),
+    ("omelette", "Omelette", 320, 22),
+    ("menemen", "Menemen", 310, 18),
+    ("yumurta", "Eggs", 240, 18),
+    ("eggs", "Eggs", 240, 18),
+    ("oatmeal", "Oatmeal", 340, 14),
+    ("oats", "Oats", 340, 14),
+    ("yulaf", "Oats", 340, 14),
+    ("yogurt", "Yogurt", 180, 16),
+    ("makarna", "Pasta", 560, 18),
+    ("pasta", "Pasta", 560, 18),
+    ("somon", "Salmon", 520, 42),
+    ("salmon", "Salmon", 520, 42),
+    ("steak", "Steak", 560, 48),
+    ("kofte", "Meatballs", 520, 36),
+    ("sushi", "Sushi", 480, 22),
+    ("salata", "Salad", 280, 10),
+    ("salad", "Salad", 280, 10),
+    ("corba", "Soup", 210, 9),
+    ("soup", "Soup", 210, 9),
+    ("banana", "Banana", 105, 1),
+    ("muz", "Banana", 105, 1),
+    ("apple", "Apple", 95, 0),
+    ("elma", "Apple", 95, 0),
+    ("tea", "Tea", 15, 0),
+    ("cay", "Tea", 15, 0),
+]
+
+_CATEGORY_RULES = [
+    ("Eating out", [
+        "eating out", "coffee", "kahve", "latte", "cappuccino", "espresso", "americano",
+        "starbucks", "cafe", "kafe", "lunch", "dinner", "breakfast", "ogle", "aksam",
+        "kahvalti", "restaurant", "restoran", "burger", "hamburger", "pizza", "sushi",
+        "doner", "durum", "kebab", "shawarma", "tavuk", "yemek", "chipotle", "taco",
+        "sandwich", "tost", "wrap", "salad", "salata", "soup", "corba", "dessert", "tatli",
+        "tea", "cay", "meal", "snack", "bowl",
+    ]),
+    ("Food", [
+        "grocer", "market", "supermarket", "migros", "bim", "a101", "food", "fruit",
+        "meyve", "sebze", "eggs", "yumurta", "milk", "sut", "bread", "ekmek", "whey",
+        "oats", "yulaf", "yogurt", "banana", "muz", "apple", "elma", "salmon", "somon",
+        "steak", "kofte", "pasta", "makarna",
+    ]),
+    ("Transport", [
+        "uber", "taxi", "taksi", "metro", "bus", "otobus", "train", "tren", "tram",
+        "fuel", "benzin", "mazot", "parking", "otopark", "flight", "ucak", "ticket",
+        "bilet", "transit", "transport", "gas",
+    ]),
+    ("Bills", [
+        "rent", "kira", "bill", "fatura", "electric", "elektrik", "internet", "wifi",
+        "phone", "telefon", "dogalgaz", "subscription", "abonelik", "netflix", "spotify",
+        "icloud",
+    ]),
+    ("Health", [
+        "gym", "spor", "pharmacy", "eczane", "doctor", "doktor", "medicine", "ilac",
+        "vitamin", "clinic", "dentist", "health", "hospital", "hastane",
+    ]),
+    ("Fun", [
+        "movie", "cinema", "sinema", "game", "oyun", "steam", "bar", "pub", "club",
+        "concert", "konser", "party", "fun", "book", "kitap", "hobby",
+    ]),
+]
+
+
+def _fold(text: str) -> str:
+    return text.translate(_FOLD_MAP).lower()
+
+
+def _parse_float_token(raw: str) -> float:
+    return float(raw.replace(",", "."))
 
 
 def _num(value, name, minimum=None, maximum=None):
@@ -61,6 +168,19 @@ def _round(n, step=1):
 
 def _money(n):
     return round(n + 1e-9, 2)
+
+
+def _has_keyword(folded: str, keyword: str) -> bool:
+    pattern = r"(?<![a-z0-9])" + re.escape(keyword) + r"(?![a-z0-9])"
+    return re.search(pattern, folded) is not None
+
+
+def _detect_category(folded: str) -> str:
+    for category, keywords in _CATEGORY_RULES:
+        for kw in keywords:
+            if _has_keyword(folded, kw):
+                return category
+    return "Other"
 
 
 def plan_targets(args: dict) -> dict:
@@ -124,6 +244,32 @@ def _clean_rows(rows, kind, fields):
     return out
 
 
+def _build_daily_series(start: date, expenses, meals, water):
+    exp_by_day = defaultdict(float)
+    kcal_by_day = defaultdict(float)
+    prot_by_day = defaultdict(float)
+    water_by_day = defaultdict(float)
+    for r in expenses:
+        exp_by_day[r["date"]] += r["amount"]
+    for r in meals:
+        kcal_by_day[r["date"]] += r["kcal"]
+        prot_by_day[r["date"]] += r["protein"]
+    for r in water:
+        water_by_day[r["date"]] += r["ml"]
+
+    series = []
+    for offset in range(7):
+        d = start + timedelta(days=offset)
+        series.append({
+            "date": d.isoformat(),
+            "spent": _money(exp_by_day[d]),
+            "kcal": _round(kcal_by_day[d]),
+            "protein": _money(prot_by_day[d]),
+            "water_ml": _round(water_by_day[d]),
+        })
+    return series
+
+
 def weekly_review(args: dict) -> dict:
     profile = args.get("profile") or {}
     end = _day(args.get("week_end") or date.today().isoformat(), "week_end")
@@ -144,6 +290,7 @@ def weekly_review(args: dict) -> dict:
     expenses = [r for r in expenses if in_week(r)]
     meals = [r for r in meals if in_week(r)]
     water = [r for r in water if in_week(r)]
+    daily_series = _build_daily_series(start, expenses, meals, water)
 
     logged_days = {r["date"] for r in expenses + meals + water}
     if len(logged_days) < MIN_LOGGED_DAYS:
@@ -152,6 +299,7 @@ def weekly_review(args: dict) -> dict:
             "status": "insufficient_data",
             "period": {"start": start.isoformat(), "end": end.isoformat()},
             "days_logged": len(logged_days),
+            "daily_series": daily_series,
             "message": (
                 f"Only {len(logged_days)} of the last 7 days have entries. "
                 f"Log {missing} more day{'s' if missing != 1 else ''} "
@@ -284,7 +432,143 @@ def weekly_review(args: dict) -> dict:
         "headline": headline,
         "money": money,
         "nutrition": nutrition,
+        "daily_series": daily_series,
         "actions": actions,
+    }
+
+
+def parse_quick_log(args: dict) -> dict:
+    raw = str((args or {}).get("text") or "").strip()
+    if len(raw) > 400:
+        raise ValueError("text must be at most 400 characters")
+    if not raw:
+        return {
+            "raw": "",
+            "expenses": [],
+            "meals": [],
+            "water": [],
+            "fasting": None,
+            "matched": False,
+        }
+
+    folded = _fold(raw)
+    work = folded
+    expenses = []
+    meals = []
+    water = []
+    fasting = None
+
+    # 1. Fasting commands
+    stop_fast_re = re.compile(
+        r"\b(?:stop|end|break|finish)\s+(?:my\s+)?fast(?:ing)?\b|\boruc(?:u|umu)?\s+(?:bitir|durdur|boz)\b"
+    )
+    start_fast_re = re.compile(
+        r"\b(?:start|begin)?\s*(14|16|18|20)\s*(?:h|hr|hrs|hour|hours|saat)?\s*(?::\s*\d{1,2})?\s*(?:fast(?:ing)?|oruc(?:a|u)?)\b"
+        r"|\b(?:start|begin)\s+(?:a\s+)?fast(?:ing)?\b"
+        r"|\boruc(?:a)?\s+(?:basla|baslat)\b"
+    )
+    m_stop = stop_fast_re.search(work)
+    if m_stop:
+        fasting = {"action": "stop"}
+        work = work[:m_stop.start()] + " " + work[m_stop.end():]
+    else:
+        m_start = start_fast_re.search(work)
+        if m_start:
+            hrs = int(m_start.group(1)) if m_start.group(1) else 16
+            fasting = {"action": "start", "target_hours": hrs}
+            work = work[:m_start.start()] + " " + work[m_start.end():]
+
+    # 2. Water tokens
+    water_patterns = [
+        (re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:ml|milliliters?)\b"), 1.0, 10000),
+        (re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:lt|liters?|litres?|l)\b"), 1000.0, 10),
+        (re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:glass(?:es)?|bardak)\b"), 250.0, 20),
+        (re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:bottle(?:s)?|sise)\b"), 500.0, 10),
+    ]
+    for pat, mult, max_raw in water_patterns:
+        def _take_water(match, mult=mult, max_raw=max_raw):
+            val = _parse_float_token(match.group(1))
+            if 0 < val <= max_raw:
+                ml = _round(val * mult)
+                if ml > 0:
+                    water.append({"ml": ml})
+            return " "
+        work = pat.sub(_take_water, work)
+
+    # 3. Calories & Protein tokens
+    total_kcal = 0.0
+    total_protein = 0.0
+    kcal_re = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:kcal|cals?|calories?|kalori)\b")
+    prot_re = re.compile(
+        r"\b(\d+(?:[.,]\d+)?)\s*(?:(?:g|gr|grams?|gram)\s*(?:protein|prot|pro|p)|(?:protein|prot|pro)|p)\b"
+    )
+
+    def _take_kcal(match):
+        nonlocal total_kcal
+        val = _parse_float_token(match.group(1))
+        if 0 < val <= 10000:
+            total_kcal += val
+        return " "
+
+    def _take_prot(match):
+        nonlocal total_protein
+        val = _parse_float_token(match.group(1))
+        if 0 < val <= 500:
+            total_protein += val
+        return " "
+
+    work = kcal_re.sub(_take_kcal, work)
+    work = prot_re.sub(_take_prot, work)
+
+    # 4. Money / Expense tokens (consume strict currency spans)
+    category = _detect_category(folded)
+    money_patterns = [
+        re.compile(r"([$€£₺])\s*(\d+(?:[.,]\d+)?)(?![a-z0-9])"),
+        re.compile(
+            r"(?<![a-z0-9])(\d+(?:[.,]\d+)?)\s*(?:₺|\$|€|£|(?:usd|eur|gbp|try|cad|aud|inr|tl|dollars?|bucks?|lira)(?![a-z0-9]))"
+        ),
+        re.compile(r"\b(?:spent|paid|cost|harcadim|odedim)\s+(\d+(?:[.,]\d+)?)(?![a-z0-9])"),
+    ]
+    for idx, pat in enumerate(money_patterns):
+        def _take_money(match, idx=idx):
+            raw_num = match.group(2) if idx == 0 else match.group(1)
+            val = _parse_float_token(raw_num)
+            if 0 < val <= 1000000:
+                expenses.append({"amount": _money(val), "category": category})
+            return " "
+        work = pat.sub(_take_money, work)
+
+    # 5. Meal assembly (explicit macros or deterministic local food lexicon)
+    matched_food = None
+    for key, title, est_kcal, est_prot in _FOOD_LEXICON:
+        if _has_keyword(folded, key):
+            matched_food = (title, est_kcal, est_prot)
+            break
+
+    if total_kcal > 0 or total_protein > 0:
+        final_kcal = _round(total_kcal) if total_kcal > 0 else _round(total_protein * 4)
+        meals.append({
+            "kcal": final_kcal,
+            "protein": _money(total_protein),
+            "label": matched_food[0] if matched_food else "Quick Meal",
+            "estimated": False,
+        })
+    elif matched_food is not None:
+        meals.append({
+            "kcal": matched_food[1],
+            "protein": _money(matched_food[2]),
+            "label": matched_food[0],
+            "estimated": True,
+        })
+
+    matched = bool(expenses or meals or water or fasting)
+    return {
+        "raw": raw,
+        "expenses": expenses,
+        "meals": meals,
+        "water": water,
+        "fasting": fasting,
+        "matched": matched,
     }
 
 
@@ -303,7 +587,7 @@ MANIFEST = {
     "name": "tool-dev-smartassistant",
     "display_name": "SmartAssistant",
     "version": VERSION,
-    "description": "Daily safe spend, nutrition targets and a weekly money and nutrition review.",
+    "description": "Daily safe spend, nutrition targets, natural-language quick-log parser and weekly money and nutrition review.",
     "tools": [
         {
             "name": "ping",
@@ -328,7 +612,7 @@ MANIFEST = {
         },
         {
             "name": "weekly_review",
-            "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with specific actions.",
+            "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with daily series and specific actions.",
             "parameters": [
                 {"name": "profile", "type": "object", "description": "User profile with budget and nutrition targets", "required": True},
                 {"name": "expenses", "type": "array", "items": {"type": "object"}, "description": "Logged expenses with amount, category, date", "required": False},
@@ -337,10 +621,21 @@ MANIFEST = {
                 {"name": "week_end", "type": "string", "description": "End date of 7-day review YYYY-MM-DD", "required": False},
             ],
         },
+        {
+            "name": "parse_quick_log",
+            "description": "Parse a single natural-language line (EN or TR) into expenses, meals, water and fasting actions.",
+            "parameters": [
+                {"name": "text", "type": "string", "description": "Natural-language quick log input", "required": True},
+            ],
+        },
     ],
 }
 
-TOOLS = {"plan_targets": plan_targets, "weekly_review": weekly_review}
+TOOLS = {
+    "plan_targets": plan_targets,
+    "weekly_review": weekly_review,
+    "parse_quick_log": parse_quick_log,
+}
 
 
 def invoke(method: str, args: dict) -> dict:

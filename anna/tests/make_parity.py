@@ -10,6 +10,7 @@ import test_plugin as t  # noqa: E402
 
 cases = [{"tool": "plan_targets", "args": a} for a in t.PLAN_CASES]
 cases += [{"tool": "weekly_review", "args": a} for a in t.review_cases()]
+cases += [{"tool": "parse_quick_log", "args": a} for a in t.QUICK_LOG_CASES]
 for c in cases:
     c["expect"] = t.plugin.invoke(c["tool"], c["args"])
 (HERE / "parity.json").write_text(json.dumps(cases, indent=2) + "\n", "utf-8")

@@ -1,15 +1,16 @@
 {
   "slug": "smartassistant",
   "name": "SmartAssistant",
-  "version": "0.1.14",
-  "tagline": "A weekly review of your spending and eating, with specific next steps.",
-  "description": "SmartAssistant compares what you spent with your monthly budget and what you ate and drank with your own targets, then tells you what to change next week.\n\n**What it does**\n\n- Setup takes about a minute: enter a budget, fixed costs, weight, height, age and goal. You get a safe daily spend and daily calorie, protein and water targets.\n- Log an expense, a meal or a glass of water in one or two taps.\n- Run the weekly review. It reports spending against your weekly allowance, your biggest category, average calories and protein against target, and days you met your water goal. It lists the specific changes that follow from those numbers.\n- If fewer than 3 of the last 7 days have entries, it says so instead of guessing.\n\n**Your data**\n\nEntries are saved in your Anna storage. Entries older than 120 days are deleted automatically, and Settings has a button that deletes everything. Calorie targets use the Mifflin-St Jeor formula and are estimates, not medical advice.",
+  "version": "0.2.0",
+  "tagline": "Daily spending runway, one-line meal & water logging, fasting zones, and weekly coaching.",
+  "description": "SmartAssistant pairs your daily spending runway with calorie, protein, hydration, and intermittent fasting goals in a calm studio interface—then gives honest weekly coaching grounded strictly in what you logged.\n\n**What it does**\n\n- **One-minute setup with live preview:** Enter your monthly budget, fixed costs, and body metrics to compute your Safe Daily Spend and calorie, protein, and hydration targets.\n- **Bilingual Smart Quick Log (EN / TR):** Type natural one-liners like \"$14 chicken bowl 500ml\" or \"tavuk pilav 180 tl 500ml su\" to preview and log spend, nutrition, water, or fasting in a single click.\n- **Daily Pulse & Hydration Studio:** Track your 0–100 Daily Pulse score alongside a rising liquid-fill hydration bar, custom favorite meal presets, and a non-destructive 12-tick fasting timer with metabolic zones.\n- **7-Day Visual Insights & Shareable Scorecard:** Explore interactive 7-day charts, category mix, consistency matrix, actionable next steps, and exportable PNG scorecards. Refuses to guess when fewer than 3 of the last 7 days are logged.\n\n**Your data**\n\nEntries are saved in your private Anna storage (with automatic 120-day pruning, JSON backup/restore, and one-click delete in Settings). Dark carbon and Warm Paper Light modes are included. Calorie and fasting insights are estimates, not medical advice.",
   "category": "productivity",
   "logo_url": "https://cdn.anna.partners/production/app-logos/600-smartassistant/20261019222726_ee29d2b3.webp",
   "screenshots": [
+    "./screenshots/welcome.png",
     "./screenshots/dashboard.png",
     "./screenshots/weekly-review.png",
-    "./screenshots/settings.png"
+    "./screenshots/fasting.png"
   ],
   "homepage_url": "https://github.com/yxdooo/smartassistant-app/tree/codex/anna-review-ready",
   "support_url": "https://github.com/yxdooo/smartassistant-app/issues",

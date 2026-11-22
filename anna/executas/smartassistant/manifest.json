@@ -1,8 +1,8 @@
 {
   "name": "tool-dev-smartassistant",
   "display_name": "SmartAssistant",
-  "version": "0.1.7",
-  "description": "Daily safe spend, nutrition targets and a weekly money and nutrition review.",
+  "version": "0.1.8",
+  "description": "Daily safe spend, nutrition targets, natural-language quick-log parser and weekly money and nutrition review.",
   "tools": [
     {
       "name": "ping",
@@ -92,7 +92,7 @@
     },
     {
       "name": "weekly_review",
-      "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with specific actions.",
+      "description": "Review the 7 days ending on week_end: spending vs allowance, calories, protein and water vs targets, with daily series and specific actions.",
       "parameters": [
         {
           "name": "profile",
@@ -132,6 +132,18 @@
           "type": "string",
           "description": "End date of 7-day review YYYY-MM-DD",
           "required": false
+        }
+      ]
+    },
+    {
+      "name": "parse_quick_log",
+      "description": "Parse a single natural-language line (EN or TR) into expenses, meals, water and fasting actions.",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Natural-language quick log input",
+          "required": true
         }
       ]
     }

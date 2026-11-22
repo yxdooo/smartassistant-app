@@ -1,9 +1,9 @@
 {
   "slug": "smartassistant",
   "name": "SmartAssistant",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "executa_type": "tool",
-  "description": "Plans daily targets and reviews a week of spending, calories, protein and water. Standard library only.",
+  "description": "Plans daily targets, parses bilingual quick-log lines, and reviews a week of spending, calories, protein and water. Standard library only.",
   "tool_id": "tool-dev-smartassistant",
   "type": "python",
   "enabled": true,
@@ -20,7 +20,7 @@
         "supports_protocol": true,
         "binary_urls": {
           "linux-x86_64": {
-            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.7/tool-dev-smartassistant-linux-x86_64.tar.gz",
+            "url": "https://github.com/yxdooo/smartassistant-app/releases/download/executa-v0.1.8/tool-dev-smartassistant-linux-x86_64.tar.gz",
             "entrypoint": "bin/tool-dev-smartassistant",
             "format": "tar.gz"
           }

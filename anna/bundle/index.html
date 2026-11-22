@@ -1,19 +1,23 @@
 <!doctype html>
-<html lang="en" style="background-color: #14181c; color-scheme: dark;">
+<html lang="en" style="background-color: #09090b; color-scheme: dark;">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>SmartAssistant</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="style.css" />
     <script src="anna-tool-ids.js"></script>
   </head>
-  <body style="background-color: #14181c; color-scheme: dark;">
+  <body>
     <main id="app" aria-busy="true">
-      <p id="boot" class="muted" role="status">Loading your data…</p>
+      <div id="boot" class="boot-card" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Loading SmartAssistant…</span>
+      </div>
     </main>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-    <div id="dialog-root" hidden></div>
+    <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title"></dialog>
     <script type="module" src="app.js"></script>
   </body>
 </html>

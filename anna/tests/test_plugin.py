@@ -53,6 +53,17 @@ PLAN_CASES = [
      "monthly_budget": 500, "fixed_costs": 400, "spent_so_far": 300, "today": "2026-12-31"},
 ]
 
+QUICK_LOG_CASES = [
+    {"text": "$14.50 lunch 620kcal 45p + 500ml"},
+    {"text": "tavuk pilav 180 tl 500ml su"},
+    {"text": "$12 uber"},
+    {"text": "start 18h fast"},
+    {"text": "orucu bitir"},
+    {"text": "2 bardak su 35g protein 12€ kahve"},
+    {"text": ""},
+    {"text": "hello world"},
+]
+
 
 def review_cases():
     under = week_args(expenses=[row(9, amount=20, category="Food"), row(11, amount=10, category="Food")])
@@ -66,12 +77,10 @@ def review_cases():
 class PlanTargets(unittest.TestCase):
     def test_known_values(self):
         r = plugin.plan_targets(PLAN_CASES[0])
-        # BMR 10*70+6.25*170-5*30-161 = 1451.5; x1.375 = 1995.8; -500 = 1495.8
         self.assertEqual(r["bmr"], 1452)
         self.assertEqual(r["calories"], 1500)
         self.assertEqual(r["protein_g"], 140)
         self.assertEqual(r["water_ml"], 2450)
-        # (1500-600-200)/22 days left in March from the 10th
         self.assertEqual(r["days_left_in_month"], 22)
         self.assertAlmostEqual(r["safe_daily_spend"], 31.82, places=2)
 
@@ -94,10 +103,12 @@ class WeeklyReview(unittest.TestCase):
         r = plugin.weekly_review(week_args())
         self.assertEqual(r["status"], "ok")
         self.assertEqual(r["money"]["spent"], 235)
-        # (2000-800)*7/31 = 270.97 allowance; 235 is 13% under
         self.assertEqual(r["money"]["status"], "under")
         self.assertEqual(r["money"]["top_categories"][0]["category"], "Eating out")
         self.assertEqual(r["nutrition"]["avg_calories"], 2333)
+        self.assertEqual(len(r["daily_series"]), 7)
+        self.assertEqual(r["daily_series"][0]["date"], "2026-03-09")
+        self.assertEqual(r["daily_series"][0]["spent"], 40.0)
         self.assertTrue(any("protein" in a.lower() for a in r["actions"]))
         self.assertTrue(all(isinstance(a, str) and a for a in r["actions"]))
 
@@ -111,6 +122,7 @@ class WeeklyReview(unittest.TestCase):
         r = plugin.weekly_review(week_args(expenses=[row(9, amount=5)], meals=[], water=[]))
         self.assertEqual(r["status"], "insufficient_data")
         self.assertEqual(r["days_logged"], 1)
+        self.assertEqual(len(r["daily_series"]), 7)
         self.assertIn("2 more days", r["message"])
 
     def test_old_rows_ignored(self):
@@ -123,6 +135,32 @@ class WeeklyReview(unittest.TestCase):
         self.assertIn("expenses[0].date", res["error"])
 
 
+class ParseQuickLog(unittest.TestCase):
+    def test_en_multi_log(self):
+        r = plugin.parse_quick_log({"text": "$14.50 lunch 620kcal 45p + 500ml"})
+        self.assertTrue(r["matched"])
+        self.assertEqual(r["expenses"], [{"amount": 14.5, "category": "Eating out"}])
+        self.assertEqual(r["meals"], [{"kcal": 620, "protein": 45.0, "label": "Quick Meal", "estimated": False}])
+        self.assertEqual(r["water"], [{"ml": 500}])
+
+    def test_tr_food_lexicon(self):
+        r = plugin.parse_quick_log({"text": "tavuk pilav 180 tl 500ml su"})
+        self.assertTrue(r["matched"])
+        self.assertEqual(r["expenses"][0]["amount"], 180.0)
+        self.assertEqual(r["expenses"][0]["category"], "Eating out")
+        self.assertEqual(r["meals"][0]["label"], "Chicken & Rice")
+        self.assertTrue(r["meals"][0]["estimated"])
+        self.assertEqual(r["water"], [{"ml": 500}])
+
+    def test_fasting_commands(self):
+        self.assertEqual(plugin.parse_quick_log({"text": "start 18h fast"})["fasting"], {"action": "start", "target_hours": 18})
+        self.assertEqual(plugin.parse_quick_log({"text": "orucu bitir"})["fasting"], {"action": "stop"})
+
+    def test_rejects_oversized_input(self):
+        res = plugin.invoke("parse_quick_log", {"text": "x" * 401})
+        self.assertFalse(res["success"])
+
+
 class Protocol(unittest.TestCase):
     def test_unknown_tool(self):
         self.assertFalse(plugin.invoke("nope", {})["success"])
@@ -130,7 +168,7 @@ class Protocol(unittest.TestCase):
     def test_describe_lists_tools(self):
         tools = plugin._handle({"method": "describe"})["tools"]
         names = [t["name"] for t in tools]
-        self.assertEqual(names, ["ping", "plan_targets", "weekly_review"])
+        self.assertEqual(names, ["ping", "plan_targets", "weekly_review", "parse_quick_log"])
         for t in tools:
             self.assertIsInstance(t["parameters"], list)
 

@@ -206,6 +206,57 @@
           "avg_water_ml": 1850,
           "water_target_ml": 2500
         },
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 40.0,
+            "kcal": 2300,
+            "protein": 70.0,
+            "water_ml": 2200
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 15.0,
+            "kcal": 2100,
+            "protein": 80.0,
+            "water_ml": 800
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 120.0,
+            "kcal": 2600,
+            "protein": 75.0,
+            "water_ml": 2500
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 60.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "actions": [
           "You finished 35.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
           "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
@@ -319,6 +370,57 @@
           "avg_water_ml": 1850,
           "water_target_ml": 2500
         },
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 150.0,
+            "kcal": 2300,
+            "protein": 70.0,
+            "water_ml": 2200
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 0.0,
+            "kcal": 2100,
+            "protein": 80.0,
+            "water_ml": 800
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 200.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 0.0,
+            "kcal": 2600,
+            "protein": 75.0,
+            "water_ml": 2500
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 90.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "actions": [
           "You spent 440.00 against a weekly allowance of 270.97, which is 169.03 over. Food was the biggest category at 240.00. Trimming it by 169.03 next week puts you back on pace.",
           "45% of the week's spending landed on Wednesday. Check if that purchase could have been planned or split.",
@@ -422,6 +524,57 @@
           "avg_water_ml": 1850,
           "water_target_ml": 2500
         },
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 20.0,
+            "kcal": 2300,
+            "protein": 70.0,
+            "water_ml": 2200
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 0.0,
+            "kcal": 2100,
+            "protein": 80.0,
+            "water_ml": 800
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 10.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 0.0,
+            "kcal": 2600,
+            "protein": 75.0,
+            "water_ml": 2500
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "actions": [
           "You finished 240.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
           "67% of the week's spending landed on Monday. Check if that purchase could have been planned or split.",
@@ -529,6 +682,57 @@
           "avg_water_ml": 1850,
           "water_target_ml": 2500
         },
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 40.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 2200
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 15.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 800
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 120.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 2500
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 60.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "actions": [
           "You finished 35.97 under your weekly allowance. Move that amount to savings now so it does not get spent later in the month.",
           "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
@@ -649,6 +853,57 @@
           "avg_water_ml": 1850,
           "water_target_ml": 2500
         },
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 40.0,
+            "kcal": 2300,
+            "protein": 70.0,
+            "water_ml": 2200
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 15.0,
+            "kcal": 2100,
+            "protein": 80.0,
+            "water_ml": 800
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 120.0,
+            "kcal": 2600,
+            "protein": 75.0,
+            "water_ml": 2500
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 60.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "actions": [
           "Set a monthly budget to compare weekly spending against an allowance.",
           "51% of the week's spending landed on Thursday. Check if that purchase could have been planned or split.",
@@ -688,7 +943,252 @@
           "end": "2026-03-15"
         },
         "days_logged": 1,
+        "daily_series": [
+          {
+            "date": "2026-03-09",
+            "spent": 5.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-10",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-11",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-12",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-13",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-14",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          },
+          {
+            "date": "2026-03-15",
+            "spent": 0.0,
+            "kcal": 0,
+            "protein": 0.0,
+            "water_ml": 0
+          }
+        ],
         "message": "Only 1 of the last 7 days have entries. Log 2 more days (an expense, a meal or a glass of water counts) and run the review again."
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "$14.50 lunch 620kcal 45p + 500ml"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "$14.50 lunch 620kcal 45p + 500ml",
+        "expenses": [
+          {
+            "amount": 14.5,
+            "category": "Eating out"
+          }
+        ],
+        "meals": [
+          {
+            "kcal": 620,
+            "protein": 45.0,
+            "label": "Quick Meal",
+            "estimated": false
+          }
+        ],
+        "water": [
+          {
+            "ml": 500
+          }
+        ],
+        "fasting": null,
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "tavuk pilav 180 tl 500ml su"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "tavuk pilav 180 tl 500ml su",
+        "expenses": [
+          {
+            "amount": 180.0,
+            "category": "Eating out"
+          }
+        ],
+        "meals": [
+          {
+            "kcal": 620,
+            "protein": 46.0,
+            "label": "Chicken & Rice",
+            "estimated": true
+          }
+        ],
+        "water": [
+          {
+            "ml": 500
+          }
+        ],
+        "fasting": null,
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "$12 uber"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "$12 uber",
+        "expenses": [
+          {
+            "amount": 12.0,
+            "category": "Transport"
+          }
+        ],
+        "meals": [],
+        "water": [],
+        "fasting": null,
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "start 18h fast"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "start 18h fast",
+        "expenses": [],
+        "meals": [],
+        "water": [],
+        "fasting": {
+          "action": "start",
+          "target_hours": 18
+        },
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "orucu bitir"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "orucu bitir",
+        "expenses": [],
+        "meals": [],
+        "water": [],
+        "fasting": {
+          "action": "stop"
+        },
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "2 bardak su 35g protein 12\u20ac kahve"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "2 bardak su 35g protein 12\u20ac kahve",
+        "expenses": [
+          {
+            "amount": 12.0,
+            "category": "Eating out"
+          }
+        ],
+        "meals": [
+          {
+            "kcal": 140,
+            "protein": 35.0,
+            "label": "Coffee",
+            "estimated": false
+          }
+        ],
+        "water": [
+          {
+            "ml": 500
+          }
+        ],
+        "fasting": null,
+        "matched": true
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": ""
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "",
+        "expenses": [],
+        "meals": [],
+        "water": [],
+        "fasting": null,
+        "matched": false
+      }
+    }
+  },
+  {
+    "tool": "parse_quick_log",
+    "args": {
+      "text": "hello world"
+    },
+    "expect": {
+      "success": true,
+      "data": {
+        "raw": "hello world",
+        "expenses": [],
+        "meals": [],
+        "water": [],
+        "fasting": null,
+        "matched": false
       }
     }
   }
